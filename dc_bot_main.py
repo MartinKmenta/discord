@@ -188,6 +188,10 @@ async def on_command_error(ctx, error):
         await ctx.send('You do not have the correct role for this command.')
     else:
         await ctx.send(error)
+        
+        # log miscelenaous errors
+        with open("error_logs.json","a") as error_logs:
+            json.dump({time.strftime("%a, %d %b %Y %H:%M:%S") : error}, error_logs, indent=4)
 
 if __name__ == "__main__":
     bot.run(TOKEN)
