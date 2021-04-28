@@ -149,21 +149,26 @@ async def kill(ctx):
     for usr in ctx.message.mentions:
         await ctx.send(f"Ok {format(usr.mention)} prepare to die!")
 
-# todo maybe some real allarm :D
+        
+# todo maybe some real alarm :D
 @bot.command(brief='Try it on someone',
-    description='usage: Count of tags (if missing - will tag 10 times) and than tag anyone (multiple tags allowed)')
+            description='usage: Count of tags (if missing - will tag 10 times) and than tag anyone (multiple tags allowed)')
+
 async def alarm(ctx, count: int = 10):
     global stop_val
-    if (count > 50 ):
-        count = 50
-    if (0 > count):
-        count = 0
+    message = "Vstávej {mention}!!!"
+    
+    #handle extremes 
+    max_ct = 50
+    if (count > max_ct ): count = max_ct
+    elif (0 > count): count = 0
+        
     for i in range(count):
         for usr in ctx.message.mentions:
-            await ctx.send(f"Vstavej {format(usr.mention)}!!!")
+            await ctx.send(message.format(usr.mention))
             time.sleep(1)
         if (not len(ctx.message.mentions) > 0):
-            await ctx.send(f"Vstavej {format(admin_id)}!!!")
+            await ctx.send(message.format(admin_id))
         time.sleep(3)
         if (stop_val):
             break
