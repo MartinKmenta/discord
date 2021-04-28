@@ -1,4 +1,5 @@
 # python3 dc_bot_main.py
+# nohup python3 dc_bot_main.py 
 
 import discord
 from discord.ext import commands
@@ -11,6 +12,8 @@ import subprocess
 from gtts import gTTS
 from mutagen.mp3 import MP3
 import time
+import sys
+import os
 
 with open('data.json') as data_json_file:
     data = json.load(data_json_file)
@@ -28,7 +31,7 @@ admin_id = data["admin_id"]
 TOKEN = data["bot_token"]
 
 # todo make it changeable
-bot = commands.Bot(command_prefix=['\\', '.'])
+bot = commands.Bot(command_prefix=['\\', '.', '?', '~'])
 
 # todo say every message in tts room
 # @bot.event
@@ -130,10 +133,13 @@ async def resume(ctx):
     stop_val = False
     # todo resume all activity such as tagging :D
 
-@bot.command()
+@bot.command(aliases=['r'])
 async def reboot(ctx):
     await ctx.send(f"Rebooting")
-    # todo reboote this bot with new changes
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
+    exit(1)
+    # rebooting no need to rubn it again if there are changes
 
 @bot.command()
 async def best(ctx):
@@ -152,11 +158,11 @@ async def kill(ctx):
         
 # todo maybe some real alarm :D
 @bot.command(brief='Try it on someone',
-            description='usage: Count of tags (if missing - will tag 10 times) and than tag anyone (multiple tags allowed)')
-
+            description='usage: Count of tags (if missing - will tag 10 times) and than tag anyone (multiple tags allowed)',
+            args='')
 async def alarm(ctx, count: int = 10):
     global stop_val
-    message = "Vstávej {mention}!!!"
+    message = "Vstávej {}!!!"
     
     #handle extremes 
     max_ct = 50
@@ -185,3 +191,4 @@ async def on_command_error(ctx, error):
 
 if __name__ == "__main__":
     bot.run(TOKEN)
+    # can't put anything here now
