@@ -1,27 +1,18 @@
 # python3 dc_bot_main.py
 # nohup python3 dc_bot_main.py 
 
-import discord
-from discord.ext import commands
-from discord.ext import tasks
-import argparse
-import subprocess
-import json
-import random
-import subprocess
-from gtts import gTTS
-from mutagen.mp3 import MP3
-import time
-import sys
-import os
+from dc_bot_imports import *
+from dc_bot_common import *
+from dc_bot_tts import tts
 
 with open('data.json') as data_json_file:
     data = json.load(data_json_file)
 
-# todo create object tts and store these values in config file together with alliases for user etc.
-lang_str = 'cs'
-volume_val = 1.0
 stop_val = False
+
+command_prefixes = ['\\', '.', '?', '~', '/']
+
+tts_instance = tts()
 
 # admin#1234
 admin_name = data["admin_name"]
@@ -29,22 +20,36 @@ admin_name = data["admin_name"]
 admin_id = data["admin_id"]
 
 TOKEN = data["bot_token"]
+bot = commands.Bot(command_prefix = command_prefixes)
 
-# todo make it changeable
-bot = commands.Bot(command_prefix=['\\', '.', '?', '~'])
-
-# todo say every message in tts room
-# @bot.event
-# async def on_message(message):
-#     if message.author == bot.user:
-#         return
-#     await message.channel.send(message.content)
-
-# todo make chanel for this bot and let him print info and some allers such ase games with 100 % sale :D
+#? ---------------------------------------------------------
+#! init
+#? ---------------------------------------------------------
 
 @bot.event
 async def on_ready():
     print("INFO: Bot is ready")
+
+    
+
+@bot.event
+async def on_message(ctx):
+    # calling base method from discord extension
+    await bot.process_commands(ctx)
+    
+    if ctx.author == bot.user:
+        return
+
+    # skipping if preffix in command
+    if ctx.content == None or ctx.content[0] in command_prefixes:
+        return
+
+    # tts handling from tts channel
+    await tts_on_message(ctx)
+    
+#? ---------------------------------------------------------
+#! wellcome 
+#? ---------------------------------------------------------
 
 # todo create better message :D
 @bot.event
@@ -55,67 +60,45 @@ async def on_member_join(member):
         f'Nazdar {member.name}, nevim co chces u nas delat, ale vitej a bav se!!! XD XD XD'
     )
 
+#? ---------------------------------------------------------
+#! tts
+#? ---------------------------------------------------------
+
+# handling messages from tts channel
+async def tts_on_message(ctx):
+    if hasattr(ctx.author, 'voice') and ctx.author.voice is not None and ctx.author.voice.channel is not None:
+        if('tts' in str(ctx.channel.name)):
+            await tts_instance.say(ctx, ctx.content)
+
+@bot.command(name='say', aliases=['s'])
+async def say(ctx,  *, msg):
+    await tts_instance.say(ctx, msg)
+
+@bot.command()
+async def lang(ctx, value: str = 'cs'):
+    tts_instance.lang(value)
+
+@bot.command()
+async def volume(ctx, value: float):
+    tts_instance.volume(value)
+    
+@bot.command()
+async def tts_info(ctx):
+    await tts_instance.info(ctx)
+    
+#? ---------------------------------------------------------
+#! channel edit commands
+#? ---------------------------------------------------------
+
 # todo add command to delete all messages in chanel
 @bot.command(name='del')
 async def delete(ctx, count: int = 100):
     deleted = await ctx.channel.purge(limit=count)
     await ctx.send(f"Deleted {len(deleted)} messages")
 
-# my private function to control leds at home :D
-# todo make it universal etc.
-@bot.command(name='leds')
-@commands.is_owner()
-async def leds(ctx, r: int = 0, g: int = 0, b: int = 0):
-    await ctx.send(f"Setting leds")
-    cmd_arg = f'python3 ~/table_control/table_control.py -r {r} -g {g} -b {b}'
-    child = subprocess.Popen(cmd_arg, shell=True)
-
-# todo make it jump into correct chanel
-@bot.command(name='say', aliases=['s'])
-async def say(ctx,  *, msg):
-    # todo make stack with messages ...
-    # await ctx.send(msg, tts=True)
-    global gTTS
-    s = gTTS(text = msg, lang = lang_str, slow = False)
-    s.save('tmp_dc_audio_to_say.mp3')
-    if hasattr(ctx.author, 'voice') and ctx.author.voice is not None and ctx.author.voice.channel is not None:
-        voice_channel = ctx.author.voice.channel
-        voice = ctx.channel.guild.voice_client
-        if voice is None:
-            voice = await voice_channel.connect()
-        elif voice.channel != voice_channel:
-            voice.move_to(voice_channel)
-
-        voice_raw = discord.FFmpegPCMAudio(source='tmp_dc_audio_to_say.mp3')
-        if (volume_val != 1):
-            voice.play(discord.PCMVolumeTransformer(voice_raw, volume=volume_val), 
-                after=lambda e: print('done'))
-        else:
-            voice.play(voice_raw, after=lambda e: print('done'))
-    else:
-        await ctx.send(f"please enter channel")
-
-# todo make it inside object - global is bad :D
-@bot.command()
-async def lang(ctx, value: str = 'cs'):
-    global lang_str
-    lang_str = value
-
-@bot.command()
-async def volume(ctx, value: float):
-    global volume_val
-    volume_val = value
-    
-@bot.command()
-async def info(ctx):
-    await ctx.send(f"lang_str   = {lang_str}")
-    await ctx.send(f"volume_val = {volume_val}")
-
-@bot.command()
-@commands.is_owner()
-async def shutdown(ctx):
-    await ctx.send(f"Shutting down")
-    await ctx.bot.close()
+#? ---------------------------------------------------------
+#! tag commands
+#? ---------------------------------------------------------
 
 @bot.command()
 async def stop(ctx):
@@ -132,14 +115,6 @@ async def resume(ctx):
     global stop_val
     stop_val = False
     # todo resume all activity such as tagging :D
-
-@bot.command(aliases=['r'])
-async def reboot(ctx):
-    await ctx.send(f"Rebooting")
-    python = sys.executable
-    os.execl(python, python, *sys.argv)
-    exit(1)
-    # rebooting no need to rubn it again if there are changes
 
 @bot.command()
 async def best(ctx):
@@ -180,6 +155,46 @@ async def alarm(ctx, n: int = 10):
         time.sleep(3)
         if (stop_val): break
 
+#? ---------------------------------------------------------
+#! aka home assisstant
+#? ---------------------------------------------------------
+
+# my private function to control leds at home :D
+# todo make it universal etc.
+@bot.command(name='leds')
+@commands.is_owner()
+async def leds(ctx, r: int = 0, g: int = 0, b: int = 0):
+    await ctx.send(f"Setting leds")
+    cmd_arg = f'python3 ~/table_control/table_control.py -r {r} -g {g} -b {b}'
+    child = subprocess.Popen(cmd_arg, shell=True)
+
+
+#? ---------------------------------------------------------
+#! debug
+#? ---------------------------------------------------------
+
+@bot.command(brief='Bot shutdown :(',
+            description='Will shutdown bot compleately')
+@commands.is_owner()
+async def shutdown(ctx):
+    await ctx.send(f"Shutting down")
+    log_error(f"Shutdown using command by {ctx.author.name}.")
+    await ctx.bot.close()
+
+@bot.command(brief='Bot restart :/',
+            description='Will restart bot. And apply changes in source code.',
+            aliases=['r'])
+async def reboot(ctx):
+    await ctx.send(f"Rebooting")
+    log_error(f"Restart using command by {ctx.author.name}.")
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
+    await ctx.bot.close()
+
+#? ---------------------------------------------------------
+#! error handeling
+#? ---------------------------------------------------------
+
 # todo make better handeling
 @bot.event
 async def on_command_error(ctx, error):
@@ -191,9 +206,14 @@ async def on_command_error(ctx, error):
         await ctx.send(error)
         
         # log miscelenaous errors
-        with open("error_logs.json","a") as error_logs:
-            json.dump({time.strftime("%a, %d %b %Y %H:%M:%S") : error}, error_logs, indent=4)
+        if (ctx.author != None):
+            log_error(error)
+
+#? ---------------------------------------------------------
+#! main
+#? ---------------------------------------------------------
 
 if __name__ == "__main__":
     bot.run(TOKEN)
-    # can't put anything here now
+
+    # called after bot.close
