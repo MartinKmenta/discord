@@ -1,26 +1,7 @@
 # python3 dc_bot_main.py
 # nohup python3 dc_bot_main.py 
 
-from dc_bot_imports import *
 from dc_bot_common import *
-from dc_bot_tts import tts
-
-with open('data.json') as data_json_file:
-    data = json.load(data_json_file)
-
-stop_val = False
-
-command_prefixes = ['\\', '.', '?', '~', '/']
-
-tts_instance = tts()
-
-# admin#1234
-admin_name = data["admin_name"]
-# <@123123123123>
-admin_id = data["admin_id"]
-
-TOKEN = data["bot_token"]
-bot = commands.Bot(command_prefix = command_prefixes)
 
 #? ---------------------------------------------------------
 #! init
@@ -39,11 +20,17 @@ async def on_message(ctx):
         return
 
     # skipping if preffix in command
-    if ctx.content == None or ctx.content[0] in command_prefixes:
+    if ctx.content == None or len(ctx.content) < 1 or ctx.content[0] in command_prefixes:
         return
 
+    # checking bad words :D just because I can
+    await on_profanity(ctx)
+
     # tts handling from tts channel
-    await tts_on_message(ctx)
+    await on_tts_message(ctx)
+    
+    # bot.dispatch('tts_message', ctx)
+    # await bot.process_commands(ctx)
     
 #? ---------------------------------------------------------
 #! wellcome 
@@ -63,7 +50,7 @@ async def on_member_join(member):
 #? ---------------------------------------------------------
 
 # handling messages from tts channel
-async def tts_on_message(ctx):
+async def on_tts_message(ctx):
     if hasattr(ctx.author, 'voice') and ctx.author.voice is not None and ctx.author.voice.channel is not None:
         if('tts' in str(ctx.channel.name)):
             await tts_instance.say(ctx, ctx.content)
@@ -88,11 +75,29 @@ async def tts_info(ctx):
 #! channel edit commands
 #? ---------------------------------------------------------
 
-# todo add command to delete all messages in chanel
+# todo add command to delete all messages in channel
 @bot.command(name='del')
 async def delete(ctx, count: int = 100):
     deleted = await ctx.channel.purge(limit=count)
     await ctx.send(f"Deleted {len(deleted)} messages")
+
+#? ---------------------------------------------------------
+#! random commands                                              
+# todo                                              add more                                         
+#? ---------------------------------------------------------
+
+async def on_profanity(ctx):
+    # searching for bad words
+    words = []
+    for word in badwords:
+        if word in ctx.content:
+            words.append(word)
+    if words == []:
+        return
+
+    await ctx.channel.send(f"{ctx.author.mention} Don't use that word!")
+    embed = discord.Embed(title="Profanity Alert!",description=f"{ctx.author.name} just said ||{words}||", color=discord.Color.blurple()) # Let's make an embed!
+    await ctx.channel.send(embed=embed)
 
 #? ---------------------------------------------------------
 #! tag commands
@@ -182,13 +187,44 @@ async def reboot(ctx):
 
 @bot.command()
 async def get_logs(ctx):
-    await ctx.send(f"Sending logs into my channel.")
-    # todo
+    channel = await get_bots_channel(ctx)
+    await ctx.send(f"Sending logs into my channel: {channel}.")
+
+    await channel.send(f"{now()} => log files:")
+    for file in log_files:
+
+        # check file existence
+        if not path.exists(file):
+            await channel.send((f'Log file "{file}" does not exist.'))
+            continue
+        
+        # make it .txt to let dc make preview of it
+        shutil.copy2(file, f'{file}.txt') 
+        await channel.send(file = discord.File(f'{file}.txt'))
+        try:
+            os.remove(f'{file}.txt')
+        except OSError as e:
+            error_msg = f"Error: {e.filename} - {e.strerror}."
+            log_error(error_msg)
+            await channel.send(error_msg)
 
 @bot.command()
+@commands.is_owner()
 async def del_logs(ctx):
     await ctx.send(f"Deleting log files")
-    # todo
+    for file in log_files:
+        # check file existence
+        if not path.exists(file):
+            await ctx.send((f'Log file "{file}" does not exist.'))
+            continue
+
+        try:
+            os.remove(file)
+            await ctx.send((f'Log file "{file}" deleted.'))
+        except OSError as e:
+            error_msg = f"Error: {e.filename} - {e.strerror}."
+            log_error(error_msg)
+            await ctx.send(error_msg)
 
 #? ---------------------------------------------------------
 #! error handeling
