@@ -178,4 +178,5 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send(error)
 
-bot.run(TOKEN)
+if __name__ == "__main__":
+    bot.run(TOKEN)
