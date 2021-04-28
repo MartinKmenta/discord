@@ -11,6 +11,9 @@ from gtts import gTTS
 # data loading
 import json
 
+# timing
+from time import sleep
+
 # no idea why
 import subprocess
 import argparse

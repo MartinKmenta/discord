@@ -6,10 +6,8 @@ class tts():
         self.lang_str = 'cs'
         self.volume_val = 1.0
 
-# todo make it jump into correct chanel
     async def say(self, ctx, msg):
         # todo make stack with messages ...
-        # todo jump into correct chanel
 
         # create voice tack to say
         s = gTTS(text = msg, lang = self.lang_str, slow = False)
@@ -20,9 +18,12 @@ class tts():
             voice = ctx.channel.guild.voice_client
             if voice is None:
                 voice = await voice_channel.connect()
-            elif voice.channel != voice_channel:
-                voice.move_to(voice_channel)
+            if voice.channel != voice_channel:
+                await voice.move_to(voice_channel)
+                # give some time to bot to find out where he is :D
+                sleep(0.1)
 
+            # playing autio file
             voice_raw = discord.FFmpegPCMAudio(source='tmp_files/tmp_dc_audio_to_say.mp3')
             if (self.volume_val != 1):
                 voice.play(discord.PCMVolumeTransformer(voice_raw, volume=self.volume_val), 
@@ -30,9 +31,7 @@ class tts():
             else:
                 voice.play(voice_raw) #, after=lambda e: print('done'))
         else:
-            # hmmmm
             await ctx.send(f"please enter channel") 
-
 
     def lang(self, value: str = 'cs'):
         self.lang_str = value

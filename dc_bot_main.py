@@ -30,8 +30,6 @@ bot = commands.Bot(command_prefix = command_prefixes)
 async def on_ready():
     print("INFO: Bot is ready")
 
-    
-
 @bot.event
 async def on_message(ctx):
     # calling base method from discord extension
@@ -142,8 +140,8 @@ async def alarm(ctx, n: int = 10):
     for i in range(n):
         for usr in ctx.message.mentions:
             await ctx.send(message.format(usr.mention))
-            time.sleep(1)
-        time.sleep(3)
+            sleep(1)
+        sleep(3)
         if (stop_val): break
 
 #? ---------------------------------------------------------
@@ -181,6 +179,16 @@ async def reboot(ctx):
     python = sys.executable
     os.execl(python, python, *sys.argv)
     await ctx.bot.close()
+
+@bot.command()
+async def get_logs(ctx):
+    await ctx.send(f"Sending logs into my channel.")
+    # todo
+
+@bot.command()
+async def del_logs(ctx):
+    await ctx.send(f"Deleting log files")
+    # todo
 
 #? ---------------------------------------------------------
 #! error handeling
