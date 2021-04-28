@@ -168,16 +168,15 @@ async def alarm(ctx, count: int = 10):
     max_ct = 50
     if (count > max_ct ): count = max_ct
     elif (0 > count): count = 0
+    
+    mentions = ctx.message.mentions
+    if mentions == []: mentions = [admin_id]
         
     for i in range(count):
         for usr in ctx.message.mentions:
             await ctx.send(message.format(usr.mention))
-            time.sleep(1)
-        if (not len(ctx.message.mentions) > 0):
-            await ctx.send(message.format(admin_id))
         time.sleep(3)
-        if (stop_val):
-            break
+        if (stop_val): break
 
 # todo make better handeling
 @bot.event
