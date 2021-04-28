@@ -18,6 +18,9 @@ from time import sleep
 from os import path
 import shutil
 
+# web requests
+import requests
+
 # no idea why
 import subprocess
 import argparse
