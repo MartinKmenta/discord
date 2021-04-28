@@ -102,19 +102,10 @@ async def delete(ctx, count: int = 100):
 
 @bot.command()
 async def stop(ctx):
-    await ctx.send(f"Stopping")
     global stop_val
-    stop_val = True
-    # todo stop all activity such as tagging :D
-
-# todo make it better to skip this command
-# (I am too lazy now)
-@bot.command()
-async def resume(ctx):
-    await ctx.send(f"Resuming")
-    global stop_val
-    stop_val = False
-    # todo resume all activity such as tagging :D
+    stop_val = not stop_val
+    if stop_val: await ctx.send(f"Stop")
+    else: await ctx.send(f"Resume")
 
 @bot.command()
 async def best(ctx):
