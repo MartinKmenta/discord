@@ -1,3 +1,5 @@
-.json
-.out
-.mp3
+*.json
+*.out
+*.mp3
+*.pyc
+*.log
