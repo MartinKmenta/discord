@@ -1,11 +1,14 @@
 from dc_bot_imports import *
+from discord.ext import commands
 
-class tts():
+class tts(commands.Cog):
 
-    def __init__(self):
+    def __init__(self,bot):
+        self.bot = bot
         self.lang_str = 'cs'
         self.volume_val = 1.0
-
+    
+    @commands.command()
     async def say(self, ctx, msg):
         # todo make stack with messages ...
 
@@ -32,13 +35,16 @@ class tts():
                 voice.play(voice_raw) #, after=lambda e: print('done'))
         else:
             await ctx.send(f"please enter channel") 
-
+    
+    @commands.command()
     def lang(self, value: str = 'cs'):
         self.lang_str = value
-
+        
+    @commands.command()
     def volume(self, value: float = 1):
         self.volume_val = value
-        
+    
+    @commands.command()
     async def info(self, ctx):
         await ctx.send(f"volume_val = {self.volume_val}")
         await ctx.send(f"lang_str = {self.lang_str}")
