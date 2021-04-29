@@ -5,6 +5,8 @@ from discord.ext import tasks
 import requests
 from bs4 import BeautifulSoup
 
+import json
+
 
 
 class Games(commands.Cog):
@@ -25,7 +27,7 @@ class Games(commands.Cog):
         return "\n".join(self.message)
     
     @tasks.loop(hours = 12)
-    async def printer(self,ctx):
+    async def printer(self):
         # automation of updates and printing
         self.find_games()
         self.generate_message()
@@ -101,7 +103,9 @@ class Games(commands.Cog):
             
         self.message = message
                 
-                
+    def write_to_json(self):
+        with open("game_fingins.json","w") as out_file:
+            json.dump(self.data, out_file, indent = 4)
                 
                 
                 
