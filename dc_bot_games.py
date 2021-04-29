@@ -5,13 +5,21 @@ from discord.ext import tasks
 import requests
 from bs4 import BeautifulSoup
 
+import json
+
 
 
 class Games(commands.Cog):
-    def __init__(self,bot):
+    """Inspired by https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html,
+    https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html"""
+    
+    def __init__(self,bot,default_channel):
         self.bot = bot
+        self.default_channel = default_channel
+        
         self.data = {}
         self.message = []
+        self.output_file = "game_fingins.json"
         
     def cog_unload(self):
         self.printer.cancel()
@@ -20,12 +28,14 @@ class Games(commands.Cog):
         return "\n".join(self.message)
     
     @tasks.loop(hours = 12)
-    async def printer(self,ctx):
+    async def printer(self):
+        # automation of updates and printing
         self.find_games()
         self.generate_message()
         
+        # send in multiple messages
         for line in self.message:
-            print(line)
+            self.default_channel.send(line)
             
     def find_games(self):
         # request page data
@@ -62,24 +72,29 @@ class Games(commands.Cog):
             if div_title is None:
                 continue
             
+            # fill template
             a = div_title.select_one("a")
             template["title"] = a.text
             template["time"] = time.text
             template["url"] = a["href"]
             
+            # group by page
             if "https://store.steampowered.com/" in a["href"]:
                 key = "steam"
             elif "https://www.epicgames.com/store/" in a["href"]:
                 key = "epic"
             else:
                 key = "other"
-                
+            
+            # write to data
             data[key].append(template.copy())
             
         self.data = data
         
     def generate_message(self):
+        # messages - list of string - stores readable lines
         message = []
+        # for all data, generate readable message.
         for key,games in self.data.items():
             message.append(key)
             message.append(30*"-")
@@ -89,7 +104,9 @@ class Games(commands.Cog):
             
         self.message = message
                 
-                
+    def write_to_json(self):
+        with open(self.output_file,"w") as out_file:
+            json.dump(self.data, out_file, indent = 4)
                 
                 
                 

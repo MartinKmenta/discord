@@ -2,10 +2,11 @@
 # nohup python3 dc_bot_main.py 
 
 from dc_bot_common import *
-
+from dc_bot_games import Games
 #? ---------------------------------------------------------
 #! init
 #? ---------------------------------------------------------
+bot.add_cog(Games(bot,default_channel=None))
 
 @bot.event
 async def on_ready():
@@ -149,98 +150,6 @@ async def alarm(ctx, n: int = 10):
         sleep(3)
         if (stop_val): break
 
-#? ---------------------------------------------------------
-#! games commands
-#? ---------------------------------------------------------
-
-# todo refactore this trash code :D
-# Too tired now :D
-# hope nobody will see this trash :D
-
-# using steamDB - not possible - maybe
-# using https://isthereanydeal.com/specials/#/filter:&giveaway instead
-@bot.command()
-async def games(ctx):
-    # try:
-        r = requests.get(url = "https://isthereanydeal.com/specials/#/filter:&giveaway")
-
-        if r.status_code != 200:
-            await ctx.send(f"Server returned {r.status_code}")
-            return 
-
-        channel = await get_bots_channel(ctx)
-        await ctx.send(f"Sending games into my channel: {channel}.")
-
-        html = r.text[r.text.find('<div id=\'games\'>') : r.text.find('<div id="lazyload">')]
-
-        games = html.split("bundle-container-outer")
-
-        games_expiring = [ x for x in games if "left" in x ]
-
-        # use it maybe :D
-        games_unknown_expiry = [ x for x in games if "unknown expiry" in x ]
-
-        # print(games_unknown_expiring)
-        # print(games_unknown_expiry)
-
-        # for games on steam
-
-        games_expiring_steam = [ x for x in games_expiring if "https://store.steampowered." in x ]
-        games_expiring_epic = [ x for x in games_expiring if "https://www.epicgames." in x ]
-
-
-        # print(games_expiring_steam)
-        # print(games_expiring[0])
-        
-        if games_expiring == None or len(games_expiring_steam) == 0:
-            await channel.send(f"No games found :cry:")
-
-        if games_expiring_steam != None and len(games_expiring_steam) > 0:
-            await channel.send(f"Games on steam:")
-            for g in games_expiring_steam:
-                games_expiring.remove(g)
-                g = g[g.find('bundle-time') : ]
-                time_to_expire = g[g.find('>') + 1 : g.find('<')]
-                g = g[g.find('href') : ]
-                link = g[6 : g.find("class") - 2]
-                title = g[g.find('>') + 1 : g.find('<')]
-
-                # print (f"{title}    {time_to_expire}    {link}")
-
-                await channel.send(f"{title}    {time_to_expire}    {link}")
-
-        await channel.send(f"----------------------------------------------------")
-
-        if games_expiring_epic != None and len(games_expiring_epic) > 0:
-            await channel.send(f"Games on epic:")
-            for g in games_expiring_epic:
-                games_expiring.remove(g)
-                g = g[g.find('bundle-time') : ]
-                time_to_expire = g[g.find('>') + 1 : g.find('<')]
-                g = g[g.find('href') : ]
-                link = g[6 : g.find("class") - 2]
-                title = g[g.find('>') + 1 : g.find('<')]
-
-                # print (f"{title}    {time_to_expire}    {link}")
-
-                await channel.send(f"{title}    {time_to_expire}    {link}")
-
-        if games_expiring != None and len(games_expiring) > 0:
-            await channel.send(f"----------------------------------------------------")
-            await channel.send(f"Other games:")
-            for g in games_expiring:
-                g = g[g.find('bundle-time') : ]
-                time_to_expire = g[g.find('>') + 1 : g.find('<')]
-                g = g[g.find('href') : ]
-                link = g[6 : g.find("class") - 2]
-                title = g[g.find('>') + 1 : g.find('<')]
-
-                # print (f"{title}    {time_to_expire}    {link}")
-
-                await channel.send(f"{title}    {time_to_expire}    {link}")
-        
-    # except:
-    #     await ctx.send("Can't get data :cry:")
 
 #? ---------------------------------------------------------
 #! aka home assisstant
