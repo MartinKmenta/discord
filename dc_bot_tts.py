@@ -1,5 +1,13 @@
 from dc_bot_imports import *
+
+import discord
 from discord.ext import commands
+
+# for tts 
+from mutagen.mp3 import MP3
+from gtts import gTTS
+
+import time
 
 class tts(commands.Cog):
 
@@ -21,10 +29,11 @@ class tts(commands.Cog):
             voice = ctx.channel.guild.voice_client
             if voice is None:
                 voice = await voice_channel.connect()
+                time.sleep(0.1)
             if voice.channel != voice_channel:
                 await voice.move_to(voice_channel)
                 # give some time to bot to find out where he is :D
-                sleep(0.1)
+                time.sleep(0.1)
 
             # playing autio file
             voice_raw = discord.FFmpegPCMAudio(source='tmp_files/tmp_dc_audio_to_say.mp3')
@@ -34,7 +43,7 @@ class tts(commands.Cog):
             else:
                 voice.play(voice_raw) #, after=lambda e: print('done'))
         else:
-            await ctx.send(f"please enter channel") 
+            await ctx.send("please enter channel") 
     
     @commands.command()
     async def lang(self, value: str = 'cs'):

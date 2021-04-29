@@ -4,10 +4,6 @@ import discord
 from discord.ext import commands
 from discord.ext import tasks
 
-# for tts 
-from mutagen.mp3 import MP3
-from gtts import gTTS
-
 # data loading
 import json
 

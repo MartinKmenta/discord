@@ -1,6 +1,8 @@
 from discord.ext import commands
-from dc_bot_common import *
+from dc_bot_data import data_class
 import time
+
+data = data_class()
 
 class Miscellaneous(commands.Cog):
     def __init__(self,bot):
@@ -9,7 +11,7 @@ class Miscellaneous(commands.Cog):
     
     @commands.command()
     async def best(self,ctx):
-        await ctx.send(f'{format(admin_id)} is the best!!!')
+        await ctx.send(f'{format(data.admin_id)} is the best!!!')
     
     @commands.command()
     async def hug(self,ctx):
@@ -49,3 +51,8 @@ class Miscellaneous(commands.Cog):
                 time.sleep(1)
             time.sleep(3)
             if (self.stop_val): break
+        
+    @commands.command(name='del')
+    async def delete(ctx, count: int = 100):
+        deleted = await ctx.channel.purge(limit=count)
+        await ctx.send(f"Deleted {len(deleted)} messages")
