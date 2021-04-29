@@ -29,6 +29,7 @@ class tts(commands.Cog):
             voice = ctx.channel.guild.voice_client
             if voice is None:
                 voice = await voice_channel.connect()
+                time.sleep(0.1)
             if voice.channel != voice_channel:
                 await voice.move_to(voice_channel)
                 # give some time to bot to find out where he is :D
