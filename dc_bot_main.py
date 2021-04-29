@@ -2,6 +2,7 @@ from dc_bot_common import *
 from dc_bot_games import Games
 from dc_bot_tts import tts
 from dc_bot_miscellaneous import Miscellaneous
+from dc_bot_home_ctr import Home_Control
 
 #? ---------------------------------------------------------
 #! init
@@ -11,6 +12,7 @@ channel = bot.get_channel(channel_id_for_this_bot)
 bot.add_cog(Games(bot,default_channel= channel))
 bot.add_cog(tts(bot))
 bot.add_cog(Miscellaneous(bot))
+bot.add_cog(Home_Control(bot))
 
 
 @bot.event
