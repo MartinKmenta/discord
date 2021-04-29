@@ -6,7 +6,7 @@ from dc_bot_games import Games
 #? ---------------------------------------------------------
 #! init
 #? ---------------------------------------------------------
-bot.add_cog(Games(bot,default_channel=None))
+bot.add_cog(Games(bot,default_channel=bot.get_channel(channel_id_for_this_bot)))
 
 @bot.event
 async def on_ready():
