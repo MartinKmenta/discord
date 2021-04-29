@@ -19,6 +19,7 @@ class Games(commands.Cog):
         
         self.data = {}
         self.message = []
+        self.output_file = "game_fingins.json"
         
     def cog_unload(self):
         self.printer.cancel()
@@ -104,7 +105,7 @@ class Games(commands.Cog):
         self.message = message
                 
     def write_to_json(self):
-        with open("game_fingins.json","w") as out_file:
+        with open(self.output_file,"w") as out_file:
             json.dump(self.data, out_file, indent = 4)
                 
                 
