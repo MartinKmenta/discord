@@ -49,3 +49,8 @@ class Miscellaneous(commands.Cog):
                 time.sleep(1)
             time.sleep(3)
             if (self.stop_val): break
+        
+    @commands.command(name='del')
+    async def delete(ctx, count: int = 100):
+        deleted = await ctx.channel.purge(limit=count)
+        await ctx.send(f"Deleted {len(deleted)} messages")

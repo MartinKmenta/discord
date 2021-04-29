@@ -1,6 +1,3 @@
-# python3 dc_bot_main.py
-# nohup python3 dc_bot_main.py 
-
 from dc_bot_common import *
 from dc_bot_games import Games
 from dc_bot_tts import tts
@@ -54,16 +51,6 @@ async def on_member_join(member):
         f'Nazdar {member.name}, nevim co chces u nas delat, ale vitej a bav se!!! XD XD XD'
     )
     
-#? ---------------------------------------------------------
-#! channel edit commands
-#? ---------------------------------------------------------
-
-# todo add command to delete all messages in channel
-@bot.command(name='del')
-async def delete(ctx, count: int = 100):
-    deleted = await ctx.channel.purge(limit=count)
-    await ctx.send(f"Deleted {len(deleted)} messages")
-
 #? ---------------------------------------------------------
 #! random commands                                              
 # todo                                              add more                                         
