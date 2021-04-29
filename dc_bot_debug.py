@@ -3,22 +3,22 @@ from discord.ext import commands
 from discord.ext import tasks
 
 from dc_bot_common import log_error, get_bots_channel, now
-from dc_bot_data import data_class
+from dc_bot_data import Data_class
 
 import shutil
 import sys
 import os
 
-data = data_class()
+data = Data_class()
 
-class debug_tools(commands.Cog):
-    def __init__(self):
-        pass
+class Debug_tools(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
     
     @commands.command(brief='Bot shutdown :(',
                 description='Will shutdown bot compleately')
     @commands.is_owner()
-    async def shutdown(self,ctx):
+    async def shutdown(self, ctx):
         await ctx.send("Shutting down")
         log_error(f"Shutdown using command by {ctx.author.name}.")
         await ctx.bot.close()
@@ -26,7 +26,7 @@ class debug_tools(commands.Cog):
     @commands.command(brief='Bot restart :/',
                 description='Will restart bot. And apply changes in source code.',
                 aliases=['r'])
-    async def reboot(ctx):
+    async def reboot(self, ctx):
         await ctx.send("Rebooting")
         log_error(f"Restart using command by {ctx.author.name}.")
         python = sys.executable
@@ -35,7 +35,7 @@ class debug_tools(commands.Cog):
     
     @commands.command()
     @commands.is_owner()
-    async def del_logs(self,ctx):
+    async def del_logs(self, ctx):
         log_files = [data.errlog_file]
         await ctx.send("Deleting log files")
         for file in log_files:
@@ -53,7 +53,7 @@ class debug_tools(commands.Cog):
                 await ctx.send(error_msg)
                 
     @commands.command()
-    async def get_logs(self,ctx):
+    async def get_logs(self, ctx):
         log_files = [data.errlog_file]
         channel = await get_bots_channel(ctx)
         await ctx.send(f"Sending logs into my channel: {channel}.")

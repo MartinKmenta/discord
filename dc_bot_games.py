@@ -7,19 +7,18 @@ from bs4 import BeautifulSoup
 
 import json
 
-
-
 class Games(commands.Cog):
     """Inspired by https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html,
     https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html"""
     
-    def __init__(self,bot,default_channel):
+    def __init__(self, bot):
         self.bot = bot
-        self.default_channel = default_channel
         
         self.data = {}
         self.message = []
         self.output_file = "game_fingins.json"
+
+        self.printer.start()
         
     def cog_unload(self):
         self.printer.cancel()
@@ -27,8 +26,22 @@ class Games(commands.Cog):
     def __str__(self):
         return "\n".join(self.message)
     
-    @tasks.loop(hours = 12)
+    @tasks.loop(seconds = 30)
     async def printer(self):
+        
+        default_channel = bot.get_channel(data.channel_id)
+
+        # creating channel
+        if channel == None:
+            guild = bot.fetch_guild(data.server_id)
+            channel = guild.create_text_channel(data.channel_default_name_for_this_bot)
+            data.channel_id = channel.id
+            
+            default_channel = bot.get_channel(data.channel_id)
+
+            # savimg new channel id
+            data.update_data()
+
         # automation of updates and printing
         self.find_games()
         self.generate_message()

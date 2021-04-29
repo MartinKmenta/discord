@@ -5,19 +5,19 @@ from discord.ext import commands
 
 # for tts 
 from mutagen.mp3 import MP3
-from gtts import gTTS
+from gtts import gTTS, lang
 
 import time
 
-class tts(commands.Cog):
+class Tts(commands.Cog):
 
-    def __init__(self,bot):
+    def __init__(self, bot):
         self.bot = bot
         self.lang_str = 'cs'
         self.volume_val = 1.0
     
-    @commands.command()
-    async def say(self, ctx, msg):
+    @commands.command(aliases = ['s'])
+    async def say(self, ctx, *, msg):
         # todo make stack with messages ...
 
         # create voice tack to say
@@ -45,13 +45,28 @@ class tts(commands.Cog):
         else:
             await ctx.send("please enter channel") 
     
+    @commands.command(description = " ".join(lang.tts_langs().keys()))
+    async def lang(self, ctx, value: str = 'cs'):
+        if value in lang.tts_langs():
+            self.lang_str = value
+            await ctx.send(f"Language set to {self.lang_str}")
+            return
+
+        await ctx.send(f"Invalid language => help lang")
+
     @commands.command()
-    async def lang(self, value: str = 'cs'):
-        self.lang_str = value
-        
-    @commands.command()
-    async def volume(self, value: float = 1):
+    async def volume(self, ctx, value: float = 1):
+        if value > 2 or value < 0:
+            await ctx.send(f"Invalid value => 0 - 2")
+
+            #handle extremes 
+            max_ct = 2
+            if (value > max_ct ): value = max_ct
+            elif (0 > value): value = 0
+
         self.volume_val = value
+        await ctx.send(f"Volume set to {self.volume_val}")
+
     
     @commands.command()
     async def info(self, ctx):

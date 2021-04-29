@@ -2,23 +2,26 @@ import discord
 from discord.ext import commands
 
 from dc_bot_games import Games
-from dc_bot_tts import tts
+from dc_bot_tts import Tts
 from dc_bot_miscellaneous import Miscellaneous
 from dc_bot_home_ctr import Home_Control
-from dc_bot_data import data_class
+from dc_bot_data import Data_class
+from dc_bot_debug import Debug_tools
 from dc_bot_common import log_error
+
 #? ---------------------------------------------------------
 #! init
 #? ---------------------------------------------------------
-data = data_class()
+data = Data_class()
 
 bot = commands.Bot(command_prefix = data.command_prefixes)
-channel = bot.get_channel(data.channel_id)
 
-bot.add_cog(Games(bot,default_channel= channel))
-bot.add_cog(tts(bot))
+
+bot.add_cog(Games(bot))
+bot.add_cog(Tts(bot))
 bot.add_cog(Miscellaneous(bot))
 bot.add_cog(Home_Control(bot))
+bot.add_cog(Debug_tools(bot))
 
 
 @bot.event
@@ -29,7 +32,7 @@ async def on_ready():
 async def on_message(ctx):
     # calling base method from discord extension
     await bot.process_commands(ctx)
-    
+
     if ctx.author == bot.user:
         return
 

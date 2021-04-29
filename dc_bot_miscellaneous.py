@@ -1,8 +1,8 @@
 from discord.ext import commands
-from dc_bot_data import data_class
+from dc_bot_data import Data_class
 import time
 
-data = data_class()
+data = Data_class()
 
 class Miscellaneous(commands.Cog):
     def __init__(self,bot):
