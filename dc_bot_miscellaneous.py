@@ -23,8 +23,8 @@ class Miscellaneous():
             
     @commands.command()
     async def stop(self,ctx):
-        stop_val = not stop_val
-        if stop_val: await ctx.send("Stop")
+        self.stop_val = not self.stop_val
+        if self.stop_val: await ctx.send("Stop")
         else: await ctx.send("Resume")
             
     # todo maybe some real alarm :D
