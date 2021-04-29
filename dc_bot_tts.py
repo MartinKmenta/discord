@@ -37,11 +37,11 @@ class tts(commands.Cog):
             await ctx.send(f"please enter channel") 
     
     @commands.command()
-    def lang(self, value: str = 'cs'):
+    async def lang(self, value: str = 'cs'):
         self.lang_str = value
         
     @commands.command()
-    def volume(self, value: float = 1):
+    async def volume(self, value: float = 1):
         self.volume_val = value
     
     @commands.command()

@@ -12,8 +12,8 @@ from dc_bot_miscellaneous import Miscellaneous
 bot = commands.Bot(command_prefix = command_prefixes)
 channel = bot.get_channel(channel_id_for_this_bot)
 bot.add_cog(Games(bot,default_channel= channel))
-bot.add_cog(tts(bot,default_channel=channel))
-bot.add_cog(Miscellaneous(bot,default_channel=channel))
+bot.add_cog(tts(bot))
+bot.add_cog(Miscellaneous(bot))
 
 
 @bot.event
@@ -53,24 +53,6 @@ async def on_member_join(member):
     await member.dm_channel.send(
         f'Nazdar {member.name}, nevim co chces u nas delat, ale vitej a bav se!!! XD XD XD'
     )
-
-#? ---------------------------------------------------------
-#! tts
-#? ---------------------------------------------------------
-
-# handling messages from tts channel
-async def on_tts_message(ctx):
-    if hasattr(ctx.author, 'voice') and ctx.author.voice is not None and ctx.author.voice.channel is not None:
-        if('tts' in str(ctx.channel.name)):
-            await tts_instance.say(ctx, ctx.content)
-
-@bot.command(name='say', aliases=['s'])
-async def say(ctx,  *, msg):
-    await tts_instance.say(ctx, msg)
-    
-@bot.command()
-async def tts_info(ctx):
-    await tts_instance.info(ctx)
     
 #? ---------------------------------------------------------
 #! channel edit commands
@@ -99,57 +81,6 @@ async def on_profanity(ctx):
     await ctx.channel.send(f"{ctx.author.mention} Don't use that word!")
     embed = discord.Embed(title="Profanity Alert!",description=f"{ctx.author.name} just said ||{words}||", color=discord.Color.blurple()) # Let's make an embed!
     await ctx.channel.send(embed=embed)
-
-#? ---------------------------------------------------------
-#! tag commands
-#? ---------------------------------------------------------
-
-@bot.command()
-async def stop(ctx):
-    global stop_val
-    stop_val = not stop_val
-    if stop_val: await ctx.send(f"Stop")
-    else: await ctx.send(f"Resume")
-
-@bot.command()
-async def best(ctx):
-    await ctx.send(f'{format(admin_id)} is the best!!!')
-
-@bot.command()
-async def hug(ctx):
-    for usr in ctx.message.mentions:
-        await ctx.send(f"hugs {format(usr.mention)}")
-
-@bot.command()
-async def kill(ctx):
-    for usr in ctx.message.mentions:
-        await ctx.send(f"Ok {format(usr.mention)} prepare to die!")
-
-        
-# todo maybe some real alarm :D
-@bot.command(brief='Try it on someone',
-            description='Will tag taged users n times.\n\
-Usage: "alarm 10 @user1 @user2"')
-async def alarm(ctx, n: int = 10):
-    global stop_val
-    message = "Vstávej {}!!!"
-    
-    #handle extremes 
-    max_ct = 20
-    if (n > max_ct ): n = max_ct
-    elif (0 > n): n = 0
-    
-    if (ctx.message.mentions == []):
-        await ctx.send(f"Require to mention someone")
-        return
-    
-    for i in range(n):
-        for usr in ctx.message.mentions:
-            await ctx.send(message.format(usr.mention))
-            sleep(1)
-        sleep(3)
-        if (stop_val): break
-
 
 #? ---------------------------------------------------------
 #! debug

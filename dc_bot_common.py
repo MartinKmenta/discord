@@ -13,8 +13,6 @@ stop_val = False
 command_prefixes = ['\\', '.', '?', '~', '/']
 log_files = ['error.log', 'nohup.out']
 
-tts_instance = tts()
-
 # admin#1234
 admin_name = data["admin_name"]
 # <@123123123123>

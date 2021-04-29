@@ -21,6 +21,9 @@ import shutil
 # web requests
 import requests
 
+# to parse HTML
+from bs4 import BeautifulSoup
+
 # no idea why
 import subprocess
 import argparse

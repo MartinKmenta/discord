@@ -2,7 +2,7 @@ from discord.ext import commands
 from dc_bot_common import *
 import time
 
-class Miscellaneous():
+class Miscellaneous(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
         self.stop_val = False
