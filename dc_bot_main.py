@@ -3,10 +3,18 @@
 
 from dc_bot_common import *
 from dc_bot_games import Games
+from dc_bot_tts import tts
+from dc_bot_miscellaneous import Miscellaneous
+
 #? ---------------------------------------------------------
 #! init
 #? ---------------------------------------------------------
-bot.add_cog(Games(bot,default_channel=bot.get_channel(channel_id_for_this_bot)))
+bot = commands.Bot(command_prefix = command_prefixes)
+channel = bot.get_channel(channel_id_for_this_bot)
+bot.add_cog(Games(bot,default_channel= channel))
+bot.add_cog(tts(bot,default_channel=channel))
+bot.add_cog(Miscellaneous(bot,default_channel=channel))
+
 
 @bot.event
 async def on_ready():
@@ -59,14 +67,6 @@ async def on_tts_message(ctx):
 @bot.command(name='say', aliases=['s'])
 async def say(ctx,  *, msg):
     await tts_instance.say(ctx, msg)
-
-@bot.command()
-async def lang(ctx, value: str = 'cs'):
-    tts_instance.lang(value)
-
-@bot.command()
-async def volume(ctx, value: float):
-    tts_instance.volume(value)
     
 @bot.command()
 async def tts_info(ctx):
@@ -149,20 +149,6 @@ async def alarm(ctx, n: int = 10):
             sleep(1)
         sleep(3)
         if (stop_val): break
-
-
-#? ---------------------------------------------------------
-#! aka home assisstant
-#? ---------------------------------------------------------
-
-# my private function to control leds at home :D
-# todo make it universal etc.
-@bot.command()
-@commands.is_owner()
-async def leds(ctx, r: int = 0, g: int = 0, b: int = 0):
-    await ctx.send(f"Setting leds")
-    cmd_arg = f'python3 ~/table_control/table_control.py -r {r} -g {g} -b {b}'
-    child = subprocess.Popen(cmd_arg, shell=True)
 
 
 #? ---------------------------------------------------------
