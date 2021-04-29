@@ -24,7 +24,6 @@ channel_id_for_this_bot = int(data["channel_id_for_this_bot"])
 channel_default_name_for_this_bot = data["channel_default_name_for_this_bot"]
 
 TOKEN = data["bot_token"]
-bot = commands.Bot(command_prefix = command_prefixes)
 
 def now():
     return time.strftime("%a, %d %b %Y %H:%M:%S")
