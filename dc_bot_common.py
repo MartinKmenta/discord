@@ -16,9 +16,9 @@ async def get_bots_channel(bot,data,ctx):
         return channel
 
     # creating channel
-    channel = await ctx.guild.create_text_channel(data.channel_default_name_for_this_bot)
+    channel = await ctx.guild.create_text_channel(data.bot_channel_default_name)
     channel_id_for_this_bot = channel.id
-    data["channel_id_for_this_bot"] = str(channel_id_for_this_bot)
+    data["channel_id_for_this_bot"] = str(data.channel_id)
 
     # savimg new channel id
     with open('data.json', 'w') as data_json_file:
