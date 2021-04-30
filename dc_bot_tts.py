@@ -1,5 +1,3 @@
-from dc_bot_imports import *
-
 import discord
 from discord.ext import commands
 
