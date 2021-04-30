@@ -7,9 +7,12 @@ from dc_bot_miscellaneous import Miscellaneous
 from dc_bot_home_ctr import Home_Control
 from dc_bot_data import data_class
 from dc_bot_common import log_error
+from dc_bot_debug import debug_tools
+
 #? ---------------------------------------------------------
 #! init
 #? ---------------------------------------------------------
+
 data = data_class()
 
 bot = commands.Bot(command_prefix = data.command_prefixes)
@@ -19,6 +22,7 @@ bot.add_cog(Games(bot,default_channel= channel))
 bot.add_cog(tts(bot))
 bot.add_cog(Miscellaneous(bot))
 bot.add_cog(Home_Control(bot))
+bot.add_cog(debug_tools(bot,data))
 
 
 @bot.event
@@ -67,7 +71,9 @@ async def on_profanity(ctx):
         return
 
     await ctx.channel.send(f"{ctx.author.mention} Don't use that word!")
-    embed = discord.Embed(title="Profanity Alert!",description=f"{ctx.author.name} just said ||{words}||", color=discord.Color.blurple()) # Let's make an embed!
+    embed = discord.Embed(title="Profanity Alert!",
+                          description=f"{ctx.author.name} just said ||{words}||",
+                          color=discord.Color.blurple()) # Let's make an embed!
     await ctx.channel.send(embed=embed)
 
 #? ---------------------------------------------------------
