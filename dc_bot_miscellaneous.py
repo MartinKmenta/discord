@@ -47,7 +47,7 @@ class Miscellaneous(commands.Cog):
         
         for i in range(n):
             for usr in ctx.message.mentions:
-                await ctx.send(str(*message.format(usr.mention)))
+                await ctx.send(str(message.format(usr.mention)))
                 time.sleep(1)
             time.sleep(3)
             if (self.stop_val): break
