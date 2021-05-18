@@ -8,11 +8,20 @@ from dc_bot_home_ctr import Home_Control
 from dc_bot_data import Data_class
 from dc_bot_debug import Debug_tools
 from dc_bot_common import log_error
+<<<<<<< HEAD
+=======
+from dc_bot_debug import debug_tools
+>>>>>>> ee4a1333bdeaf12f179863b8ca7054f18b8c6d94
 
 #? ---------------------------------------------------------
 #! init
 #? ---------------------------------------------------------
+<<<<<<< HEAD
 data = Data_class()
+=======
+
+data = data_class()
+>>>>>>> ee4a1333bdeaf12f179863b8ca7054f18b8c6d94
 
 bot = commands.Bot(command_prefix = data.command_prefixes)
 
@@ -21,7 +30,11 @@ bot.add_cog(Games(bot))
 bot.add_cog(Tts(bot))
 bot.add_cog(Miscellaneous(bot))
 bot.add_cog(Home_Control(bot))
+<<<<<<< HEAD
 bot.add_cog(Debug_tools(bot))
+=======
+bot.add_cog(debug_tools(bot,data))
+>>>>>>> ee4a1333bdeaf12f179863b8ca7054f18b8c6d94
 
 
 @bot.event
@@ -63,14 +76,16 @@ async def on_member_join(member):
 async def on_profanity(ctx):
     # searching for bad words
     words = []
-    for word in data.badwords:
+    for word in data["badwords"]:
         if word in ctx.content:
             words.append(word)
     if words == []:
         return
 
     await ctx.channel.send(f"{ctx.author.mention} Don't use that word!")
-    embed = discord.Embed(title="Profanity Alert!",description=f"{ctx.author.name} just said ||{words}||", color=discord.Color.blurple()) # Let's make an embed!
+    embed = discord.Embed(title="Profanity Alert!",
+                          description=f"{ctx.author.name} just said ||{words}||",
+                          color=discord.Color.blurple()) # Let's make an embed!
     await ctx.channel.send(embed=embed)
 
 #? ---------------------------------------------------------
