@@ -11,12 +11,14 @@ class Games(commands.Cog):
     """Inspired by https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html,
     https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html"""
     
-    def __init__(self, bot):
+    def __init__(self, bot, data):
         self.bot = bot
         
-        self.data = {}
+        self.data = data
+
+        self.games_data = {}
         self.message = []
-        self.output_file = "game_fingins.json"
+        self.output_file = "game_findings.json"
 
         self.printer.start()
         
@@ -28,27 +30,27 @@ class Games(commands.Cog):
     
     @tasks.loop(seconds = 30)
     async def printer(self):
-        
-        default_channel = bot.get_channel(data.channel_id)
+        pass
+        # default_channel = self.bot.get_channel(self.data.channel_id)
 
-        # creating channel
-        if channel == None:
-            guild = bot.fetch_guild(data.server_id)
-            channel = guild.create_text_channel(data.channel_default_name_for_this_bot)
-            data.channel_id = channel.id
+        # # # creating channel
+        # # if default_channel == None:
+        # #     guild = self.bot.fetch_guild(self.data.server_id)
+        # #     default_channel = guild.create_text_channel(self.data.channel_default_name_for_this_bot)
+        # #     self.data.channel_id = channel.id
             
-            default_channel = bot.get_channel(data.channel_id)
+        # #     default_channel = bot.get_channel(self.data.channel_id)
 
-            # savimg new channel id
-            data.update_data()
+        # #     # savimg new channel id
+        # #     self.data.update_data()
 
-        # automation of updates and printing
-        self.find_games()
-        self.generate_message()
+        # # automation of updates and printing
+        # self.find_games()
+        # self.generate_message()
         
-        # send in multiple messages
-        for line in self.message:
-            self.default_channel.send(line)
+        # # send in multiple messages
+        # for line in self.message:
+        #     default_channel.send(line)
             
     def find_games(self):
         # request page data
@@ -65,7 +67,7 @@ class Games(commands.Cog):
         games_container = div_games.find_all(class_ = "bundle-container")
         
         # store games in dictionary: keys = "steam","epic", "other"
-        data = {"steam":[],"epic":[],"other":[]}
+        games_data = {"steam":[],"epic":[],"other":[]}
         template = {"title": None, "time": None, "url": None}
         
         # for all containers, find and write to data
@@ -100,15 +102,15 @@ class Games(commands.Cog):
                 key = "other"
             
             # write to data
-            data[key].append(template.copy())
+            games_data[key].append(template.copy())
             
-        self.data = data
+        self.games_data = games_data
         
     def generate_message(self):
         # messages - list of string - stores readable lines
         message = []
         # for all data, generate readable message.
-        for key,games in self.data.items():
+        for key,games in self.games_data.items():
             message.append(key)
             message.append(30*"-")
             for game in games:
@@ -119,7 +121,7 @@ class Games(commands.Cog):
                 
     def write_to_json(self):
         with open(self.output_file,"w") as out_file:
-            json.dump(self.data, out_file, indent = 4)
+            json.dump(self.games_data, out_file, indent = 4)
                 
                 
                 
