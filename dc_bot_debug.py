@@ -3,20 +3,18 @@ from discord.ext import commands
 from discord.ext import tasks
 
 from dc_bot_common import log_error, get_bots_channel, now
-from dc_bot_data import data_class
 
 import shutil
 import sys
 import os
 
-data = data_class()
-
 class debug_tools(commands.Cog):
-    def __init__(self):
-        pass
+    def __init__(self, bot, data):
+        self.bot = bot
+        self.data = data
     
     @commands.command(brief='Bot shutdown :(',
-                description='Will shutdown bot compleately')
+                description='Will shutdown bot completely')
     @commands.is_owner()
     async def shutdown(self,ctx):
         await ctx.send("Shutting down")
@@ -36,7 +34,7 @@ class debug_tools(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def del_logs(self,ctx):
-        log_files = [data.errlog_file]
+        log_files = [self.data.errlog_file]
         await ctx.send("Deleting log files")
         for file in log_files:
             # check file existence
@@ -54,8 +52,8 @@ class debug_tools(commands.Cog):
                 
     @commands.command()
     async def get_logs(self,ctx):
-        log_files = [data.errlog_file]
-        channel = await get_bots_channel(ctx)
+        log_files = [self.data.errlog_file]
+        channel = await get_bots_channel(self.bot,self.data,ctx)
         await ctx.send(f"Sending logs into my channel: {channel}.")
     
         await channel.send(f"{now()} => log files:")
