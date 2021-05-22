@@ -1,13 +1,13 @@
 import discord
 from discord.ext import commands
 
-from dc_bot_games import Games
-from dc_bot_tts import Tts
-from dc_bot_miscellaneous import Miscellaneous
-from dc_bot_home_ctr import Home_Control
-from dc_bot_data import Data_class
-from dc_bot_debug import Debug_tools
-from dc_bot_common import log_error
+from Modules.dc_bot_games import Games
+from Modules.dc_bot_tts import Tts
+from Modules.dc_bot_miscellaneous import Miscellaneous
+from Modules.dc_bot_home_ctr import Home_Control
+from Modules.dc_bot_data import Data_class
+from Modules.dc_bot_debug import Debug_tools
+from Modules.dc_bot_common import log_error
 
 #? ---------------------------------------------------------
 #! init
