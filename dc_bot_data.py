@@ -1,24 +1,25 @@
 import json
 
-class Data_class():
+class Data_class(dict):
     def __init__(self):
         self.file_name = "data.json"
         self.errlog_file = "error.log"
         
         with open('data.json') as data_json_file:
-            self.data = json.load(data_json_file)
+            data = json.load(data_json_file)
         
-        # unpack data to atributes
-        for key,item in self.data.items():
-            setattr(self, key, item)
-        
-
-        # todo loading from file and storing info about changes
-        
-    def write_data(self):
-        with open(self.file_name) as data_json_file:
-            json.dump(self.data, data_json_file)
+        super(Data_class,self).__init__(data)
     
-    def fetch_data(self):
-        with open(self.file_name) as data_json_file:
-            self.data = json.load(data_json_file)
+    def __getattr__(self,key):
+        return self[key]
+    
+    def __setattr__(self, key, value):
+        self[key] = value
+    
+    def __del__(self):
+        print("Destructor called, data saved.")
+        self.write_data()
+            
+    def write_data(self):
+        with open(self.file_name, mode = "w") as data_json_file:
+            json.dump(self, data_json_file)
