@@ -88,7 +88,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send('You do not have the correct role for this command.')
     else:
-        await ctx.send(error)
+        print(error)
         
         # log miscelenaous errors
         if (ctx.author != None):
