@@ -1,17 +1,15 @@
 from discord.ext import commands
-from dc_bot_data import Data_class
 import time
 
-data = Data_class()
-
 class Miscellaneous(commands.Cog):
-    def __init__(self,bot):
+    def __init__(self,bot,data):
         self.bot = bot
         self.stop_val = False
+        self.data = data
     
     @commands.command()
     async def best(self,ctx):
-        await ctx.send(f'{format(data.admin_id)} is the best!!!')
+        await ctx.send(f'{format(self.data.admin_id)} is the best!!!')
     
     @commands.command()
     async def hug(self,ctx):

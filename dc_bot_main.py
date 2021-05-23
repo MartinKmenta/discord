@@ -20,7 +20,7 @@ bot = commands.Bot(command_prefix = data.command_prefixes)
 
 bot.add_cog(Games(bot, data))
 bot.add_cog(Tts(bot))
-bot.add_cog(Miscellaneous(bot))
+bot.add_cog(Miscellaneous(bot, data))
 bot.add_cog(Home_Control(bot))
 bot.add_cog(Debug_tools(bot,data))
 
