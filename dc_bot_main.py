@@ -65,7 +65,7 @@ async def on_profanity(ctx):
     # searching for bad words
     words = []
     for word in data["badwords"]:
-        if word in ctx.content:
+        if word.lower() in ctx.content:
             words.append(word)
     if words == []:
         return
