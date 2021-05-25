@@ -57,11 +57,10 @@ class Miscellaneous(commands.Cog):
         if (ctx.message.mentions == []):
             await ctx.send("Requires to mention someone")
             return
-        
+
+        s = " ".join(usr.mention for usr in ctx.message.mentions)
         for i in range(n):
-            for usr in ctx.message.mentions:
-                await ctx.send(message.format(usr.mention))
-                time.sleep(1)
+            await ctx.send(message.format(s))
             time.sleep(3)
             if (self.stop_val): break
         
