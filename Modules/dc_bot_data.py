@@ -2,10 +2,10 @@ import json
 
 class Data_class(dict):
     def __init__(self):
-        self.file_name = "data.json"
-        self.errlog_file = "error.log"
+        self.file_name = "Resources/data.json"
+        self.errlog_file = "Resources/error.log"
         
-        with open('data.json') as data_json_file:
+        with open(self.file_name) as data_json_file:
             data = json.load(data_json_file)
         
         super(Data_class,self).__init__(data)
@@ -15,11 +15,7 @@ class Data_class(dict):
     
     def __setattr__(self, key, value):
         self[key] = value
-    
-    def __del__(self):
-        print("Destructor called, data saved.")
-        self.write_data()
             
     def write_data(self):
-        with open(self.file_name, mode = "w") as data_json_file:
+        with open(self.file_name, "w") as data_json_file:
             json.dump(self, data_json_file)
