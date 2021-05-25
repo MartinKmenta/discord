@@ -9,8 +9,6 @@ class Miscellaneous(commands.Cog):
         self.data = data
         self.reminders = []
         self.next = None
-    
-        self.reminder.start()
 
     @commands.command()
     async def best(self, ctx):
@@ -35,14 +33,34 @@ class Miscellaneous(commands.Cog):
     @commands.command()
     async def remindme(self, ctx, minutes: int = 5):
         when = int(time.time() + minutes*60)
-        heapq.heappush(self.reminders, (when, ctx))
 
-    @tasks.loop(minutes = 5)
+        #if next reminder is not empty push to priority queue
+        if self.next: 
+            heapq.heappush(self.reminders, (when, ctx))
+        else:
+            self.next = (when,ctx)
+        
+        #start reminder loop
+        if not self.reminder.is_running():
+            self.reminder.start()
+
+    @tasks.loop(minutes = 1)
     async def reminder(self):
+        print("INFO: reminder started")
+        #self.next is not empty/None
         t, ctx = self.next
-        if time.time() < t:
-            ctx.send(f"!!! {ctx.author} !!!")
-            self.next = heapq.pop(self.reminders)
+
+        #if now is later than reminder
+        if time.time() > t:
+            print(ctx)
+            await ctx.reply("!!!")
+
+            #next reminder
+            if self.reminders:
+                self.next = heapq.pop(self.reminders)
+            else:
+                self.next = None
+                self.reminder.stop()
             
     @commands.command(brief='Try it on someone',
                       description="Will tag taged users n times. \nUsage: alarm 10 @user1 @user2 ...")
@@ -62,9 +80,9 @@ class Miscellaneous(commands.Cog):
         for i in range(n):
             await ctx.send(message.format(s))
             time.sleep(3)
-            if (self.stop_val): break
+            if (self.stop_val): break #limit alarm
         
     @commands.command(name='del')
-    async def delete(ctx, count: int = 100):
+    async def delete(self, ctx, count: int = 100):
         deleted = await ctx.channel.purge(limit=count)
         await ctx.send(f"Deleted {len(deleted)} messages")
