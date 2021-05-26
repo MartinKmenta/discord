@@ -31,8 +31,8 @@ class Miscellaneous(commands.Cog):
         else: await ctx.send("Resume")
 
     @commands.command()
-    async def remindme(self, ctx, minutes: int = 5):
-        when = int(time.time() + minutes*60)
+    async def remindme(self, ctx, minutes: int = 5, hours: int = 0):
+        when = int(time.time() + minutes*60 + hours*360)
 
         #if next reminder is not empty push to priority queue
         if self.next: 
@@ -42,23 +42,23 @@ class Miscellaneous(commands.Cog):
         
         #start reminder loop
         if not self.reminder.is_running():
+            print("INFO: reminder started")
             self.reminder.start()
 
     @tasks.loop(minutes = 1)
     async def reminder(self):
-        print("INFO: reminder started")
         #self.next is not empty/None
         t, ctx = self.next
 
         #if now is later than reminder
         if time.time() > t:
-            print(ctx)
             await ctx.reply("!!!")
 
             #next reminder
             if self.reminders:
-                self.next = heapq.pop(self.reminders)
+                self.next = heapq.heappop(self.reminders)
             else:
+                print("INFO: reminder stoped")
                 self.next = None
                 self.reminder.stop()
             
