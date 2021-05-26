@@ -9,6 +9,7 @@ class Miscellaneous(commands.Cog):
         self.data = data
         self.reminders = []
         self.next = None
+        self.reminder_is_running = False
 
     @commands.command()
     async def best(self, ctx):
@@ -42,8 +43,9 @@ class Miscellaneous(commands.Cog):
             self.next = (when,ctx)
         
         #start reminder loop
-        if not self.reminder.is_running():
+        if not self.reminder_is_running:
             print("INFO: reminder started")
+            self.reminder_is_running = True
             self.reminder.start()
 
     @tasks.loop(minutes = 1)
@@ -61,6 +63,7 @@ class Miscellaneous(commands.Cog):
             else:
                 print("INFO: reminder stoped")
                 self.next = None
+                self.reminder_is_running = False
                 self.reminder.stop()
             
     @commands.command(brief='Try it on someone',
