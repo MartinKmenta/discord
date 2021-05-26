@@ -31,8 +31,9 @@ class Miscellaneous(commands.Cog):
         else: await ctx.send("Resume")
 
     @commands.command()
-    async def remindme(self, ctx, minutes: int = 5, hours: int = 0):
-        when = int(time.time() + minutes*60 + hours*360)
+    async def remindme(self, ctx, minutes: int = 5):
+        minutes = min(minutes,24*60*60)
+        when = int(time.time() + minutes*60)
 
         #if next reminder is not empty push to priority queue
         if self.next: 
