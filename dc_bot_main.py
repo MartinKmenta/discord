@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands, tasks
+import pprint
 
 from Modules.dc_bot_games import Games
 from Modules.dc_bot_tts import Tts
@@ -28,6 +29,7 @@ bot.add_cog(Debug_tools(bot,data))
 @bot.event
 async def on_ready():
     print("INFO: Bot is ready")
+    pprint.pprint(data)
 
 @bot.event
 async def on_message(ctx):
