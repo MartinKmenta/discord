@@ -7,19 +7,20 @@ from bs4 import BeautifulSoup
 
 import json
 
-
-
 class Games(commands.Cog):
     """Inspired by https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html,
     https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html"""
     
-    def __init__(self,bot,default_channel):
+    def __init__(self, bot, data):
         self.bot = bot
-        self.default_channel = default_channel
         
-        self.data = {}
+        self.data = data
+
+        self.games_data = {}
         self.message = []
-        self.output_file = "game_fingins.json"
+        self.output_file = "game_findings.json"
+
+        self.printer.start()
         
     def cog_unload(self):
         self.printer.cancel()
@@ -29,13 +30,19 @@ class Games(commands.Cog):
     
     @tasks.loop(hours = 12)
     async def printer(self):
+        default_channel = self.bot.get_channel(self.data.channel_id)
+
+        if not default_channel:
+            print("INFO: No default channel")
+            return
+
         # automation of updates and printing
         self.find_games()
         self.generate_message()
         
         # send in multiple messages
         for line in self.message:
-            self.default_channel.send(line)
+            await default_channel.send(line)
             
     def find_games(self):
         # request page data
@@ -52,7 +59,7 @@ class Games(commands.Cog):
         games_container = div_games.find_all(class_ = "bundle-container")
         
         # store games in dictionary: keys = "steam","epic", "other"
-        data = {"steam":[],"epic":[],"other":[]}
+        games_data = {"steam":[],"epic":[],"other":[]}
         template = {"title": None, "time": None, "url": None}
         
         # for all containers, find and write to data
@@ -87,26 +94,26 @@ class Games(commands.Cog):
                 key = "other"
             
             # write to data
-            data[key].append(template.copy())
+            games_data[key].append(template.copy())
             
-        self.data = data
+        self.games_data = games_data
         
     def generate_message(self):
         # messages - list of string - stores readable lines
         message = []
         # for all data, generate readable message.
-        for key,games in self.data.items():
+        for key,games in self.games_data.items():
             message.append(key)
             message.append(30*"-")
             for game in games:
-                message.append("{}\t{}\t{}".format(*game.values()))
+                message.append("{}\t{}\t<{}>".format(*game.values()))
             message.append(30*"-")
             
         self.message = message
                 
     def write_to_json(self):
         with open(self.output_file,"w") as out_file:
-            json.dump(self.data, out_file, indent = 4)
+            json.dump(self.games_data, out_file, indent = 4)
                 
                 
                 

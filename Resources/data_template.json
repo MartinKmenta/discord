@@ -1,0 +1,10 @@
+{
+    "TOKEN": "",
+    "admin_name": "",
+    "admin_id": "",
+    "command_prefixes": [],
+    "channel_id": null,
+    "server_id":  null,
+    "bot_channel_default_name": "",
+    "badwords": []
+}
