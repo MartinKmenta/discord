@@ -28,29 +28,21 @@ class Games(commands.Cog):
     def __str__(self):
         return "\n".join(self.message)
     
-    @tasks.loop(seconds = 30)
+    @tasks.loop(hours = 12)
     async def printer(self):
-        pass
-        # default_channel = self.bot.get_channel(self.data.channel_id)
+        default_channel = self.bot.get_channel(self.data.channel_id)
 
-        # # # creating channel
-        # # if default_channel == None:
-        # #     guild = self.bot.fetch_guild(self.data.server_id)
-        # #     default_channel = guild.create_text_channel(self.data.channel_default_name_for_this_bot)
-        # #     self.data.channel_id = channel.id
-            
-        # #     default_channel = bot.get_channel(self.data.channel_id)
+        if not default_channel:
+            print("INFO: No default channel")
+            return
 
-        # #     # savimg new channel id
-        # #     self.data.update_data()
-
-        # # automation of updates and printing
-        # self.find_games()
-        # self.generate_message()
+        # automation of updates and printing
+        self.find_games()
+        self.generate_message()
         
-        # # send in multiple messages
-        # for line in self.message:
-        #     default_channel.send(line)
+        # send in multiple messages
+        for line in self.message:
+            await default_channel.send(line)
             
     def find_games(self):
         # request page data
@@ -114,7 +106,7 @@ class Games(commands.Cog):
             message.append(key)
             message.append(30*"-")
             for game in games:
-                message.append("{}\t{}\t{}".format(*game.values()))
+                message.append("{}\t{}\t<{}>".format(*game.values()))
             message.append(30*"-")
             
         self.message = message

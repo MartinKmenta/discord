@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ext import tasks
 
-from dc_bot_common import log_error, get_bots_channel, now
+from Modules.dc_bot_common import log_error, now
 
 import shutil
 import sys
@@ -52,9 +52,13 @@ class Debug_tools(commands.Cog):
                 
     @commands.command()
     async def get_logs(self,ctx):
+        
         log_files = [self.data.errlog_file]
-        channel = await get_bots_channel(self.bot,self.data,ctx)
-        await ctx.send(f"Sending logs into my channel: {channel}.")
+        channel = self.bot.get_channel(self.data.channel_id)
+        if not channel:
+            channel = ctx
+
+        await ctx.send("Sending logs into my channel.")
     
         await channel.send(f"{now()} => log files:")
         for file in log_files:

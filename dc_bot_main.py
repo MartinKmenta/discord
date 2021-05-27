@@ -1,13 +1,14 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
+import pprint
 
-from dc_bot_games import Games
-from dc_bot_tts import Tts
-from dc_bot_miscellaneous import Miscellaneous
-from dc_bot_home_ctr import Home_Control
-from dc_bot_data import Data_class
-from dc_bot_debug import Debug_tools
-from dc_bot_common import log_error
+from Modules.dc_bot_games import Games
+from Modules.dc_bot_tts import Tts
+from Modules.dc_bot_miscellaneous import Miscellaneous
+from Modules.dc_bot_home_ctr import Home_Control
+from Modules.dc_bot_data import Data_class
+from Modules.dc_bot_debug import Debug_tools
+from Modules.dc_bot_common import log_error
 
 #? ---------------------------------------------------------
 #! init
@@ -20,7 +21,7 @@ bot = commands.Bot(command_prefix = data.command_prefixes)
 
 bot.add_cog(Games(bot, data))
 bot.add_cog(Tts(bot))
-bot.add_cog(Miscellaneous(bot))
+bot.add_cog(Miscellaneous(bot, data))
 bot.add_cog(Home_Control(bot))
 bot.add_cog(Debug_tools(bot,data))
 
@@ -28,6 +29,7 @@ bot.add_cog(Debug_tools(bot,data))
 @bot.event
 async def on_ready():
     print("INFO: Bot is ready")
+    pprint.pprint(data)
 
 @bot.event
 async def on_message(ctx):
@@ -42,7 +44,15 @@ async def on_message(ctx):
         return
 
     # checking bad words :D just because I can
-    await on_profanity(ctx)    
+    await on_profanity(ctx)
+    
+@bot.command(name="join")
+async def default_channel(ctx):
+    global data
+    data.channel_id = ctx.channel.id
+    data.write_data()
+    print(f"INFO: joined {data.channel_id}")
+   
 #? ---------------------------------------------------------
 #! wellcome 
 #? ---------------------------------------------------------
@@ -53,7 +63,7 @@ async def on_member_join(member):
     print(f"{member.name} joined")
     await member.create_dm()
     await member.dm_channel.send(
-        f'Nazdar {member.name}, nevim co chces u nas delat, ale vitej a bav se!!! XD XD XD'
+        f'Nazdar {member.name}, nevím co chceš u nás dělat, ale vítej a bav se!!! XD XD XD'
     )
     
 #? ---------------------------------------------------------
@@ -65,7 +75,7 @@ async def on_profanity(ctx):
     # searching for bad words
     words = []
     for word in data["badwords"]:
-        if word in ctx.content:
+        if word.lower() in ctx.content:
             words.append(word)
     if words == []:
         return
@@ -88,7 +98,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send('You do not have the correct role for this command.')
     else:
-        await ctx.send(error)
+        print(error)
         
         # log miscelenaous errors
         if (ctx.author != None):
@@ -100,5 +110,5 @@ async def on_command_error(ctx, error):
 
 if __name__ == "__main__":
     bot.run(data.TOKEN)
-
     # called after bot.close
+    data.write_data()
