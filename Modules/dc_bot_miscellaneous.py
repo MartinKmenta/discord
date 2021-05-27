@@ -31,7 +31,7 @@ class Miscellaneous(commands.Cog):
         if self.stop_val: await ctx.send("Stop")
         else: await ctx.send("Resume")
 
-    @commands.command()
+    @commands.command(aliases = ['remind','reminder','timer'])
     async def remindme(self, ctx, minutes: int = 5):
         minutes = min(minutes,24*60*60)
         when = int(time.time() + minutes*60)
