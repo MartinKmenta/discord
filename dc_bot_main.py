@@ -29,7 +29,9 @@ bot.add_cog(Debug_tools(bot,data))
 @bot.event
 async def on_ready():
     print("INFO: Bot is ready")
+    print('-'*30)
     pprint.pprint(data)
+    print('-'*30)
 
 @bot.event
 async def on_message(ctx):
@@ -98,7 +100,8 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send('You do not have the correct role for this command.')
     else:
-        print(error)
+        print('-'*30)
+        raise error
         
         # log miscelenaous errors
         if (ctx.author != None):
