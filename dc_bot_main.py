@@ -95,17 +95,19 @@ async def on_profanity(ctx):
 # todo make better handeling
 @bot.event
 async def on_command_error(ctx, error):
+    if __debug__:
+        raise error
+            
     if isinstance(error, commands.errors.NotOwner):
         await ctx.send("Unauthorized!")
     elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send('You do not have the correct role for this command.')
     else:
         print('-'*30)
-        raise error
+        print(error)
         
         # log miscelenaous errors
-        if (ctx.author != None):
-            log_error(error)
+        log_error(error)
 
 #? ---------------------------------------------------------
 #! main
