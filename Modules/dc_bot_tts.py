@@ -22,21 +22,22 @@ class Tts(commands.Cog):
         self.tts_queue = []
         #self.voice = discord.VoiceClient(client, channel)
         
-
+    @commands.command(aliases = ['ttsjoin','voicejoin'])
     async def tts_join(self,ctx):
-        self.voice_channel_handeler(ctx.author)
+        self.default_channel = ctx.channel
         
     
-    async def voice_channel_handeler(self,author):
+    async def voice_channel_handeler(self,member):
+        assert isinstance(member,discord.member)
+        
         #join 
-        voice_channel = author.voice.channel  
+        voice_channel = member.voice.channel  
         voice_client = await voice_channel.connect()
         time.sleep(0.1)
 
         self.joined = True
         self.voice_client = voice_client
-        print(self.voice_client)
-
+        
 
     async def text_to_speech_save_to_file(self,msg: str):
         # create voice track to say
@@ -48,13 +49,14 @@ class Tts(commands.Cog):
         tts = gTTS(text = msg, lang = self.lang_str)
         mp3_fp = BytesIO()
         tts.write_to_fp(mp3_fp)
+        mp3_fp.seek(0)
         return mp3_fp
 
 
     async def tts_play(self,msg: str):
         mp3_fp = await self.text_to_speech(msg)
-        audio = discord.FFmpegAudio(source = mp3_fp)
-        await self.voice_client.play(audio)
+        discord_AudioSource = discord.FFmpegAudio(source = mp3_fp)
+        await self.voice_client.play(discord_AudioSource)
 
 
     async def play_from_source(self,path):
