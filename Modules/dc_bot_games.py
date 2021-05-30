@@ -18,7 +18,12 @@ class Games(commands.Cog):
         self.message = []
         self.output_file = "Resources/game_findings.json"
         self.printer.start()
-
+        self.names = ["steam",
+                      "epic",
+                      "daily indie gaming",
+                      "humble bundle",
+                      "other"
+                      ]
 
     def cog_unload(self):
         self.printer.cancel()
@@ -30,6 +35,10 @@ class Games(commands.Cog):
 
     @tasks.loop(hours = 12)
     async def printer(self):
+        # generate data etc...
+        self.before_printing()
+        
+        # load default channel, handle it's existance
         default_channel = self.bot.get_channel(self.data.channel_id)
 
         if not default_channel:
@@ -39,17 +48,18 @@ class Games(commands.Cog):
         # send in multiple messages
         for line in self.message:
             await default_channel.send(line)
+        
+        # memory cleanup
+        self.printer_is_done()
 
 
-    @printer.after_loop
-    async def printer_is_done(self):
+    def printer_is_done(self):
         # memory cleanup
         self.message.clear()
         self.games_data.clear()
 
 
-    @printer.before_loop
-    async def before_printing(self):        
+    def before_printing(self):
         # automation of updates and printing
         self.find_games()
         self.generate_message()
@@ -73,12 +83,7 @@ class Games(commands.Cog):
         games_container = div_games.find_all(class_ = "bundle-container")
         
         # store games in dictionary: keys = "steam","epic", "other"
-        games_data = {"steam":[],
-                      "epic":[],
-                      "daily indie gaming":[],
-                      "humble bundle":[],
-                      "other":[]
-                      }
+        games_data = {key : list() for key in self.names}
         
         template = {"title": None, "time": None, "url": None}
         
@@ -110,11 +115,11 @@ class Games(commands.Cog):
             deals_domains = {"https://store.steampowered.com/" : "steam",
                              "https://www.epicgames.com/store/" : "epic",
                              "https://www.dailyindiegame.com" : "daily indie gaming",
-                             "https://www.humblebundle.com" : "humble bundle"
+                             "https://www.humblebundle.com" : "humble bundle",
+                             "" : "other"
                              }
             
-            key = "other"
-            
+            # convert domain to simplified name
             for dkey in deals_domains:
                 if deal_url.startswith(dkey):
                     key = deals_domains[dkey]
@@ -130,6 +135,7 @@ class Games(commands.Cog):
         # messages - list of string - stores readable lines
         message = []
         category_separator = 60*"-"
+        
         # for all data, generate readable message.
         for key,games in self.games_data.items():
             message.append(key)
