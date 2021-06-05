@@ -25,28 +25,15 @@ bot.add_cog(Miscellaneous(bot, data))
 bot.add_cog(Home_Control(bot))
 bot.add_cog(Debug_tools(bot,data))
 
+separator = '-'*30
 
 @bot.event
 async def on_ready():
     print("INFO: Bot is ready")
-    print('-'*30)
+    print(separator)
     pprint.pprint(data)
-    print('-'*30)
+    print(separator)
 
-@bot.event
-async def on_message(ctx):
-    # calling base method from discord extension
-    await bot.process_commands(ctx)
-
-    if ctx.author == bot.user:
-        return
-
-    # skipping if preffix in command
-    if ctx.content == None or len(ctx.content) < 1 or ctx.content[0] in data.command_prefixes:
-        return
-
-    # checking bad words :D just because I can
-    await on_profanity(ctx)
     
 @bot.command(name="join")
 async def default_channel(ctx):
@@ -67,26 +54,6 @@ async def on_member_join(member):
     await member.dm_channel.send(
         f'Nazdar {member.name}, nevím co chceš u nás dělat, ale vítej a bav se!!! XD XD XD'
     )
-    
-#? ---------------------------------------------------------
-#! random commands                                              
-# todo                                              add more                                         
-#? ---------------------------------------------------------
-
-async def on_profanity(ctx):
-    # searching for bad words
-    words = []
-    for word in data["badwords"]:
-        if word.lower() in ctx.content:
-            words.append(word)
-    if words == []:
-        return
-
-    await ctx.channel.send(f"{ctx.author.mention} Don't use that word!")
-    embed = discord.Embed(title="Profanity Alert!",
-                          description=f"{ctx.author.name} just said ||{words}||",
-                          color=discord.Color.blurple()) # Let's make an embed!
-    await ctx.channel.send(embed=embed)
 
 #? ---------------------------------------------------------
 #! error handeling
@@ -94,20 +61,19 @@ async def on_profanity(ctx):
 
 # todo make better handeling
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(ctx, error):            
+    if isinstance(error, commands.errors.CommandNotFound):
+        return
+    
     if __debug__:
+        await bot.close()
         raise error
-            
-    if isinstance(error, commands.errors.NotOwner):
-        await ctx.send("Unauthorized!")
-    elif isinstance(error, commands.errors.CheckFailure):
-        await ctx.send('You do not have the correct role for this command.')
-    else:
-        print('-'*30)
-        print(error)
         
-        # log miscelenaous errors
-        log_error(error)
+    print(separator)
+    print(error)
+    
+    # log miscelenaous errors
+    log_error(error)
 
 #? ---------------------------------------------------------
 #! main
