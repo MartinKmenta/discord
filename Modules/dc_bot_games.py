@@ -5,7 +5,7 @@ from discord.ext import tasks
 import requests
 from bs4 import BeautifulSoup
 
-import json
+import pandas as pd
 
 class Games(commands.Cog):
     """Inspired by https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html,
@@ -14,18 +14,23 @@ class Games(commands.Cog):
     def __init__(self, bot = None, data = None):
         self.bot = bot
         self.data = data
-        self.games_data = {}
+    
         self.message = []
-        self.output_file = "Resources/game_findings.json"
+        self.output_file = "Resources/game_findings.pkl"
         self.printer.start()
-        self.names = ["steam",
+        self.printables = ["steam",
                       "epic",
                       "daily indie gaming",
                       "humble bundle",
+                      "amazon",
+                      "indiegala",
+                      "jdoqocy",
                       "other"
                       ]
 
-
+        self.data = pd.DataFrame()
+        
+        
     def cog_unload(self):
         self.printer.cancel()
 
@@ -33,11 +38,8 @@ class Games(commands.Cog):
     def __str__(self):
         return "\n".join(self.message)
 
-
     @tasks.loop(hours = 12)
     async def printer(self):
-        # generate data etc...
-        self.before_printing()
         
         # load default channel, handle it's existance
         default_channel = self.bot.get_channel(self.data.channel_id)
@@ -46,30 +48,50 @@ class Games(commands.Cog):
             print("INFO: No default channel")
             return
         
+        # generate data etc...
+        self.before_printing()        
+        
         # send in multiple messages
         for part in self.message:
             await default_channel.send(part)
         
         # memory cleanup
-        self.printer_is_done()
+        self.memory_cleanup()
 
 
-    def printer_is_done(self):
+    def memory_cleanup(self):
         # memory cleanup
         self.message.clear()
         self.games_data.clear()
+        self.raw_data.clear()
 
 
     def before_printing(self):
         # automation of updates and printing
-        self.find_games()
+        self.find_new_games()
         self.generate_message()
+
+
+    def find_new_games(self):
+        self.find_games()
+        try:
+            old_data = pd.read_pickle(filepath_or_buffer=self.output_file)
+        except:
+            print("no data found")
+        else:
+            new_data = pd.merge(self.data, old_data, on=['url'], how="outer", indicator=True)
+            new_data = new_data[new_data['_merge'] == 'left_only']
+            new_data.drop('_merge',1)
+            self.data = new_data
         
-        # save data for later comparasion
-        self.write_to_json()
-    
-    
+        
     def find_games(self):
+        self.raw_find_games()
+        self.add_domain_name()
+        self.data.to_pickle(path=self.output_file)
+    
+    
+    def raw_find_games(self):
         # request page data
         page = requests.get(url = "https://isthereanydeal.com/specials/#/filter:&giveaway")
     
@@ -83,10 +105,8 @@ class Games(commands.Cog):
         div_games = soup.find(id="games")
         games_container = div_games.find_all(class_ = "bundle-container")
         
-        # store games in dictionary: keys = "steam","epic", "other"
-        games_data = {key : list() for key in self.names}
-        
-        template = {"title": None, "time": None, "url": None}
+                
+        raw_data = []
         
         # for all containers, find and write to data
         for game in games_container:
@@ -109,49 +129,55 @@ class Games(commands.Cog):
             a = div_title.select_one("a")
             deal_url = a["href"]
             
-            template["title"] = a.text
-            template["time"] = time.text
-            template["url"] = deal_url
-            
+            raw_data.append((a.text,
+                             deal_url,
+                             time.text))
+        
+        self.data = pd.DataFrame([*raw_data],columns=["name","url","time"])
+        self.data = self.data.drop_duplicates(subset=['url'],keep='first')
+    
+    
+    def add_domain_name(self):
+        def get_simplified_domain(url):    
             # group by domain
             deals_domains = {"https://store.steampowered.com/" : "steam",
                              "https://www.epicgames.com/store/" : "epic",
                              "https://www.dailyindiegame.com" : "daily indie gaming",
                              "https://www.humblebundle.com" : "humble bundle",
+                             "https://gaming.amazon.com" : "amazon",
+                             "https://freebies.indiegala.com": "indiegala",
+                             "http://www.jdoqocy.com" : "jdoqocy",
                              "" : "other"
                              }
             
             # convert domain to simplified name
-            for dkey in deals_domains:
-                if deal_url.startswith(dkey):
-                    key = deals_domains[dkey]
-                    break
-                
-            # write to data
-            games_data[key].append(template.copy())
-            
-        self.games_data = games_data
-
+            for domain in deals_domains:
+                if url.startswith(domain):
+                    key = deals_domains[domain]
+                    return key
+        
+        self.data['domain'] = self.data.apply(lambda x: get_simplified_domain(x['url']),axis = 1)
+    
     
     def generate_message(self):
         # messages - list of string - stores readable lines
         full_message = []
         partial_message = ''
         mlines = []
-        
         category_separator = 60*"-"
         
-        # for all data, generate readable message.
-        for key,games in self.games_data.items():
-            mlines.append(category_separator)
-            mlines.append(key)
-            mlines.append(category_separator)
-                        
-            for game in games:
-                line = "{}\t{}\t<{}>".format(*game.values())
-                mlines.append(line)
         
-        # group messages
+        grouped = self.data.groupby('domain')
+        for name in self.printables:
+            if name in grouped.groups:
+                mlines.append(category_separator)
+                mlines.append(name)
+                mlines.append(category_separator)
+                
+                for i,s  in grouped.get_group(name).iterrows():
+                    line = "{}\t{}\t<{}>".format(*s[['name','time','url']])
+                    mlines.append(line)
+        
         max_length = 1500
         sub_total = 0
         for line in mlines:
@@ -166,11 +192,5 @@ class Games(commands.Cog):
         self.message = full_message
     
     
-    def write_to_json(self):
-        with open(self.output_file,"w+") as out_file:
-            json.dump(self.games_data, out_file, indent = 4)
-
-
-    def load_json(self):
-        with open(self.output_file,"r") as in_file:
-            return json.load(in_file)
+    
+    
