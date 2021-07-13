@@ -25,6 +25,7 @@ class Tts(commands.Cog):
     @commands.command(aliases = ['ttsjoin','voicejoin'])
     async def tts_join(self,ctx):
         self.default_channel = ctx.channel
+        await ctx.send("joined")
         
     
     async def voice_channel_handeler(self,member):
@@ -39,13 +40,13 @@ class Tts(commands.Cog):
         self.voice_client = voice_client
         
 
-    async def text_to_speech_save_to_file(self,msg: str):
+    def text_to_speech_save_to_file(self,msg: str):
         # create voice track to say
         s = gTTS(text = msg, lang = self.lang_str, slow = False)
         s.save('tmp_files/tmp_dc_audio_to_say.mp3')
 
 
-    async def text_to_speech(self,msg: str):
+    def text_to_speech(self,msg: str):
         tts = gTTS(text = msg, lang = self.lang_str)
         mp3_fp = BytesIO()
         tts.write_to_fp(mp3_fp)
@@ -54,20 +55,20 @@ class Tts(commands.Cog):
 
 
     async def tts_play(self,msg: str):
-        mp3_fp = await self.text_to_speech(msg)
-        discord_AudioSource = discord.FFmpegAudio(source = mp3_fp)
-        await self.voice_client.play(discord_AudioSource)
+        mp3_fp = self.text_to_speech(msg)
+        discord_AudioSource = discord.FFmpegPCMAudio(source = mp3_fp)
+        await self.play_sound(discord_AudioSource)
 
 
-    async def play_from_source(self,path):
+    async def play_sound(self,File):
         # playing autio file
-        voice_source = discord.FFmpegPCMAudio(source=path)
+        discord_AudioSource = discord.FFmpegPCMAudio(source=File)
 
         # if volume is not 1 transform to volume
         if (self.volume_val != 1):
-            voice_source = discord.PCMVolumeTransformer(voice_source, volume=self.volume_val)
+            discord_AudioSource = discord.PCMVolumeTransformer(discord_AudioSource, volume=self.volume_val)
 
-        self.voice_channel.play(voice_source)
+        await self.voice_client.play(discord_AudioSource)
     
 
     @commands.command(aliases = ['s'])
@@ -118,5 +119,13 @@ class Tts(commands.Cog):
     
     @commands.command()
     async def info(self, ctx):
-        await ctx.send(f"volume_val = {self.volume_val}")
-        await ctx.send(f"lang_str = {self.lang_str}")
+        template = "{}\t\t\t{}\n"
+        information = {"volume" : self.volume_val,
+                       "language" : self.lang_str}
+        
+        message = ""
+        
+        for key,item in information.items():
+            message += template.format(key,item)
+        
+        await ctx.send(message)
