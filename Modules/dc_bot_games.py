@@ -28,18 +28,27 @@ class Games(commands.Cog):
                       "other"
                       ]
 
-        self.data = pd.DataFrame()
+        self.games_data = pd.DataFrame()
         
         
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         self.printer.cancel()
 
 
     def __str__(self):
         return "\n".join(self.message)
 
-    @tasks.loop(hours = 12)
-    async def printer(self):
+    @tasks.loop(hours = 24)
+    async def printer(self) -> None:
+        # automation of updates and printing
+        self.find_new_games()
+        
+        if self.games_data.empty:
+            self.memory_cleanup()
+            return
+        
+        self.generate_message()
+            
         
         # load default channel, handle it's existance
         default_channel = self.bot.get_channel(self.data.channel_id)
@@ -59,39 +68,32 @@ class Games(commands.Cog):
         self.memory_cleanup()
 
 
-    def memory_cleanup(self):
+    def memory_cleanup(self) -> None:
         # memory cleanup
         self.message.clear()
         self.games_data.clear()
-        self.raw_data.clear()
+        
 
-
-    def before_printing(self):
-        # automation of updates and printing
-        self.find_new_games()
-        self.generate_message()
-
-
-    def find_new_games(self):
+    def find_new_games(self) -> None:
         self.find_games()
         try:
             old_data = pd.read_pickle(filepath_or_buffer=self.output_file)
         except:
             print("no data found")
         else:
-            new_data = pd.merge(self.data, old_data, on=['url'], how="outer", indicator=True)
+            new_data = pd.merge(self.games_data, old_data, on=['url'], how="outer", indicator=True)
             new_data = new_data[new_data['_merge'] == 'left_only']
             new_data.drop('_merge',1)
-            self.data = new_data
+            self.games_data = new_data
         
         
-    def find_games(self):
+    def find_games(self) -> None:
         self.raw_find_games()
         self.add_domain_name()
-        self.data.to_pickle(path=self.output_file)
+        self.games_data.to_pickle(path=self.output_file)
     
     
-    def raw_find_games(self):
+    def raw_find_games(self) -> None:
         # request page data
         page = requests.get(url = "https://isthereanydeal.com/specials/#/filter:&giveaway")
     
@@ -133,11 +135,11 @@ class Games(commands.Cog):
                              deal_url,
                              time.text))
         
-        self.data = pd.DataFrame([*raw_data],columns=["name","url","time"])
-        self.data = self.data.drop_duplicates(subset=['url'],keep='first')
+        self.games_data = pd.DataFrame([*raw_data],columns=["name","url","time"])
+        self.games_data = self.games_data.drop_duplicates(subset=['url'],keep='first')
     
     
-    def add_domain_name(self):
+    def add_domain_name(self) -> None:
         def get_simplified_domain(url):    
             # group by domain
             deals_domains = {"https://store.steampowered.com/" : "steam",
@@ -156,10 +158,10 @@ class Games(commands.Cog):
                     key = deals_domains[domain]
                     return key
         
-        self.data['domain'] = self.data.apply(lambda x: get_simplified_domain(x['url']),axis = 1)
+        self.games_data['domain'] = self.games_data.apply(lambda x: get_simplified_domain(x['url']),axis = 1)
     
     
-    def generate_message(self):
+    def generate_message(self) -> None:
         # messages - list of string - stores readable lines
         full_message = []
         partial_message = ''
@@ -167,7 +169,7 @@ class Games(commands.Cog):
         category_separator = 60*"-"
         
         
-        grouped = self.data.groupby('domain')
+        grouped = self.games_data.groupby('domain')
         for name in self.printables:
             if name in grouped.groups:
                 mlines.append(category_separator)
