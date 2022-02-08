@@ -18,7 +18,7 @@ class Debug_tools(commands.Cog):
     @commands.is_owner()
     async def shutdown(self, ctx):
         await ctx.send("Shutting down")
-        log_error(f"Shutdown using command by {ctx.author.name}.")
+        log_error(f"Shutdown using command by {ctx.author.name}.", self.data.errlog_file)
         await ctx.bot.close()
     
     @commands.command(brief='Bot restart :/',
@@ -26,12 +26,12 @@ class Debug_tools(commands.Cog):
                 aliases=['r'])
     async def reboot(self, ctx):
         await ctx.send("Rebooting")
-        log_error(f"Restart using command by {ctx.author.name}.")
+        log_error(f"Restart using command by {ctx.author.name}.", self.data.errlog_file)
         python = sys.executable
         os.execl(python, python, *sys.argv)
         await ctx.bot.close()
     
-    @commands.command()
+    @commands.command(aliases = ['del_log','delete_logs','delete_log'])
     @commands.is_owner()
     async def del_logs(self,ctx):
         log_files = [self.data.errlog_file]
@@ -47,10 +47,10 @@ class Debug_tools(commands.Cog):
                 await ctx.send((f'Log file "{file}" deleted.'))
             except OSError as e:
                 error_msg = f"Error: {e.filename} - {e.strerror}."
-                log_error(error_msg)
+                log_error(error_msg, self.data.errlog_file)
                 await ctx.send(error_msg)
                 
-    @commands.command()
+    @commands.command(aliases = ['get_log','print_logs','print_log'])
     async def get_logs(self,ctx):
         
         log_files = [self.data.errlog_file]
@@ -75,5 +75,5 @@ class Debug_tools(commands.Cog):
                 os.remove(f'{file}.txt')
             except OSError as e:
                 error_msg = f"Error: {e.filename} - {e.strerror}."
-                log_error(error_msg)
+                log_error(error_msg, self.data.errlog_file)
                 await channel.send(error_msg)

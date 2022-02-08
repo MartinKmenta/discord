@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands, tasks
-from datetime import datetime
+from Modules.dc_bot_common import format_time_at
 import heapq
 import time
 
@@ -36,16 +36,9 @@ class Miscellaneous(commands.Cog):
         if self.stop_val: await ctx.send("Stop")
         else: await ctx.send("Resume")
 
-    def format_time_for_reminder(self, time):
-        # UTC + 1h
-        timezone = 3600
-        return datetime.fromtimestamp(time + timezone).strftime('at %H:%M on %d. %m. %Y')
-
     @commands.command(aliases = ['timers'])
     async def reminders(self, ctx):
-        await ctx.send("```reminders:\n" + ("\n".join(f"{self.format_time_for_reminder(when)} {ctx.author}" for when, ctx in self.reminders)) + "```")
-
-        
+        await ctx.send("```reminders:\n" + ("\n".join(f"{format_time_at(when)} {ctx.author}" for when, ctx in self.reminders)) + "```")
 
     @commands.command(aliases = ['remind','reminder','timer','responce'])
     async def remindme(self, ctx, minutes: int = 5, hours: int = 0, days: int = 0):
@@ -57,7 +50,7 @@ class Miscellaneous(commands.Cog):
             
         when = int(time.time() + minutes * 60)
 
-        await ctx.reply(f"Ok, {self.format_time_for_reminder(when)}")
+        await ctx.reply(f"Ok, {format_time_at(when)}")
 
         self.reminders.append((when, ctx))
         self.reminders.sort(key=lambda x: x[0])

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 import pprint
 
-from Modules.dc_bot_games import Games
+# from Modules.dc_bot_games import Games
 from Modules.dc_bot_tts import Tts
 from Modules.dc_bot_miscellaneous import Miscellaneous
 from Modules.dc_bot_home_ctr import Home_Control
@@ -19,7 +19,7 @@ data = Data_class()
 bot = commands.Bot(command_prefix = data.command_prefixes)
 
 
-bot.add_cog(Games(bot, data))
+# bot.add_cog(Games(bot, data))
 bot.add_cog(Tts(bot))
 bot.add_cog(Miscellaneous(bot, data))
 bot.add_cog(Home_Control(bot))
@@ -74,7 +74,7 @@ async def on_command_error(ctx, error):
         
         # log miscelenaous errors
         if (ctx.author != None):
-            log_error(error)
+            log_error(error, data.errlog_file)
 
 #? ---------------------------------------------------------
 #! main
