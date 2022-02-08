@@ -64,16 +64,17 @@ async def on_member_join(member):
 async def on_command_error(ctx, error):            
     if isinstance(error, commands.errors.CommandNotFound):
         return
-    
-    if __debug__:
-        await bot.close()
-        raise error
+    if isinstance(error, commands.errors.NotOwner):
+        await ctx.send("Unauthorized!")
+    elif isinstance(error, commands.errors.CheckFailure):
+        await ctx.send('You do not have the correct role for this command.')
+    else:
+        print(separator)
+        print(error)
         
-    print(separator)
-    print(error)
-    
-    # log miscelenaous errors
-    log_error(error)
+        # log miscelenaous errors
+        if (ctx.author != None):
+            log_error(error)
 
 #? ---------------------------------------------------------
 #! main
