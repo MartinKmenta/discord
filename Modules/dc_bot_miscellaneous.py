@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands, tasks
+from datetime import datetime
 import heapq
 import time
 
@@ -9,7 +10,6 @@ class Miscellaneous(commands.Cog):
         self.stop_val = False
         self.data = data
         self.reminders = []
-        self.next = None
         self.reminder_is_running = False
 
 
@@ -36,43 +36,55 @@ class Miscellaneous(commands.Cog):
         if self.stop_val: await ctx.send("Stop")
         else: await ctx.send("Resume")
 
+    def format_time_for_reminder(self, time):
+        # UTC + 1h
+        timezone = 3600
+        return datetime.fromtimestamp(time + timezone).strftime('at %H:%M on %d. %m. %Y')
+
+    @commands.command(aliases = ['timers'])
+    async def reminders(self, ctx):
+        await ctx.send("```reminders:\n" + ("\n".join(f"{self.format_time_for_reminder(when)} {ctx.author}" for when, ctx in self.reminders)) + "```")
+
+        
 
     @commands.command(aliases = ['remind','reminder','timer','responce'])
-    async def remindme(self, ctx, minutes: int = 5):
-        minutes = min(minutes,24*60*60)
-        when = int(time.time() + minutes*60)
+    async def remindme(self, ctx, minutes: int = 5, hours: int = 0, days: int = 0):
+        minutes += (days * 24 + hours) * 60
+        max_42_days = 24 * 60 * 42
+        if minutes > max_42_days:
+            minutes = max_42_days
+            await ctx.reply("Maximal time is 42 days")
+            
+        when = int(time.time() + minutes * 60)
 
-        #if next reminder is not empty push to priority queue
-        if self.next: 
-            heapq.heappush(self.reminders, (when, ctx))
-        else:
-            self.next = (when,ctx)
+        await ctx.reply(f"Ok, {self.format_time_for_reminder(when)}")
+
+        self.reminders.append((when, ctx))
+        self.reminders.sort(key=lambda x: x[0])
         
         #start reminder loop
         if not self.reminder_is_running:
-            print("INFO: reminder started")
+            # print("INFO: reminder started")
             self.reminder_is_running = True
             self.reminder.start()
 
 
     @tasks.loop(minutes = 1)
     async def reminder(self):
-        #self.next is not empty/None
-        t, ctx = self.next
-
         #if now is later than reminder
-        if time.time() > t:
-            await ctx.reply("!!!")
+        # first reminder is the most actual and first element in tuple is time
+        while self.reminders and time.time() > self.reminders[0][0]:
+            _, ctx = self.reminders.pop(0)
+            try:
+                await ctx.reply(f"!!! {ctx.author.mention}")
+            except:
+                await ctx.send(f"!!! {ctx.author.mention}")
 
-            #next reminder
-            if self.reminders:
-                self.next = heapq.heappop(self.reminders)
-            else:
-                print("INFO: reminder stoped")
-                self.next = None
-                self.reminder_is_running = False
-                self.reminder.stop()
-    
+        if self.reminder_is_running and not self.reminders:
+            # print("INFO: reminder stoped")
+            self.reminder_is_running = False
+            self.reminder.stop()
+
             
     @commands.command(brief='Try it on someone',
                       description="Will tag taged users n times. \nUsage: alarm 10 @user1 @user2 ...")
